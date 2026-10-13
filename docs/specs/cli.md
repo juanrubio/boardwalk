@@ -1,10 +1,11 @@
 # Boardwalk CLI specification
 
-**Status:** Final — amended by A1 (2026-10-13)
+**Status:** Final — amended by A1 and A2 (2026-10-13)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
 **Amended:** 2026-10-13 — A1, owner approval of the
-[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md).
-Amended passages are marked *(A1)*; see the amendment log at the end.
+[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md);
+A2, mockup beauty-review fixes ([mockups.md](mockups.md)).
+Amended passages are marked *(A1)* / *(A2)*; see the amendment log at the end.
 **Date:** 2026-10-13
 **Scope:** The noun-first command surface (`project`, `item`, `board`)
 from [ADR 0003](../decisions/0003-command-grammar-noun-first.md)
@@ -225,7 +226,12 @@ a consistent visual standard across all commands (ADR 0007).
   single-select fields render with option tint chips matching GitHub's
   palette (tui.md §3).
 - **Truncation on TTY:** columns truncate with `…` to fit terminal width
-  without hard wrapping onto subsequent lines.
+  without hard wrapping onto subsequent lines. *(A2)* The reference
+  column is **never truncated**: it must stay copyable back into a
+  command (§1). At narrow widths (80 columns) the `KIND` and
+  `REPOSITORY` columns are dropped first — the reference already encodes
+  both — before any other column truncates (see
+  [mockups.md](mockups.md) §5).
 - **Piped output (stdout not a TTY, without `--json`):** tab-separated
   values (TSV), no headers, no truncation, no color codes, compatible
   with standard Unix tools (`awk`, `cut`, `grep`), matching `gh`'s
@@ -290,3 +296,6 @@ Changes from here require a spec amendment, not a silent edit.
   - §5: new — human output standards, table truncation, piped TSV format,
     debounced stderr progress spinner, OSC 8 hyperlinks, Huh prompts,
     and NO_COLOR / `--color` handling.
+- **A2 (2026-10-13)** — mockup beauty-review fixes:
+  - §5: the reference column never truncates; at 80 columns `KIND` and
+    `REPOSITORY` are dropped before anything else truncates.

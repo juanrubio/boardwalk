@@ -1,10 +1,11 @@
 # Boardwalk TUI specification
 
-**Status:** Final — amended by A1 (2026-10-13)
+**Status:** Final — amended by A1 and A2 (2026-10-13)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
 **Amended:** 2026-10-13 — A1, owner approval of the
-[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md).
-Amended passages are marked *(A1)*; see the amendment log at the end.
+[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md);
+A2, mockup beauty-review fixes ([mockups.md](mockups.md)).
+Amended passages are marked *(A1)* / *(A2)*; see the amendment log at the end.
 **Date:** 2026-10-13
 **Scope:** `boardwalk board` — full item management in the MVP
 ([ADR 0006](../decisions/0006-tui-scope-full-in-mvp.md), Final) on the
@@ -221,7 +222,10 @@ recorded in [mockups.md](mockups.md).
 - **Columns** fill the available width in field-option order (§1),
   each with a header showing the option name and its item count.
   Columns have a minimum readable width, *(A1)* initially 26 cells, to
-  be confirmed in the layout spike. When more columns exist than
+  be confirmed in the layout spike. *(A2)* The mockups show comfortable
+  columns at 36 cells (35 beside the detail pane): anything narrower
+  cannot hold a full copyable reference (`issue owner/repo#number`)
+  inside the card, so the spike starts from 36, not 26. When more columns exist than
   fit, the board scrolls horizontally and the focused column is always
   fully visible. Column bodies scroll vertically and independently.
 - *(A1)* **Off-screen hints.** Hidden columns are shown at the board
@@ -269,7 +273,10 @@ recorded in [mockups.md](mockups.md).
 **Compact (2 lines)** *(A1)* — line 1 is the title, and line 2 is the
 reference followed by the assignee. Compact cards have no box. They use a
 one-cell left gutter instead, so roughly twice as many cards fit on an
-80×24 screen.
+80×24 screen. *(A2)* Where the full linked reference cannot fit the
+column with the assignee, line 2 shortens it to `…#<number>`; the full
+copyable reference is unchanged in detail, list view, and on copy (`y`).
+Comfortable cards, list rows, and CLI output never shorten references.
 
 The focused card is unmistakable without colour: a drawn border plus a
 focus marker in addition to any highlight. Cards carry no decoration
@@ -402,7 +409,11 @@ the PRD's preview/pending-changes contract (§3, §8 flow C).
   the summary then marks each line `✓ applied` or `✗ failed` with its
   reason. Retry resends only the failed lines. Discard drops only the
   unapplied ones. Applied values are never rolled back behind the user's
-  back.
+  back. *(A2)* The confirm key on the pre-save summary is `Enter`. On a
+  partial-failure summary the keys are `Enter` (retry failed lines only),
+  `e` (back to the form, edits kept), and `Esc` (back, asking first
+  before discarding unapplied changes). The summary deliberately does
+  not reuse the board's `d` (density) or `r` (refresh) keys.
 - **Discard:** leaving edit mode with unsaved changes always asks
   first. There is no path that silently drops a dirty form.
 - Validation happens before the summary; a form containing an invalid
@@ -631,3 +642,11 @@ build starts. The results are recorded as an amendment.
     focus-stable streaming, mutation payloads instead of refetches.
   - §6: larger fixtures, reference column, garbled clause fixed, A1 keys.
   - §7: new — visual acceptance gate.
+- **A2 (2026-10-13)** — mockup beauty-review fixes:
+  - §3: compact cards may shorten a linked reference to `…#<number>`
+    on line 2 only when the full form cannot fit with the assignee.
+  - §4: change-summary keys named (`Enter` confirm/retry, `e` back to
+    form, `Esc` back); the summary never reuses board keys `d` or `r`.
+  - [mockups.md](mockups.md) redrawn at true cell geometry with the
+    list-view, edit-form, help/search, archive-modal, too-small, and
+    monochrome states added.
