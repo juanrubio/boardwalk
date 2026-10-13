@@ -13,6 +13,7 @@ import (
 
 // Tokens are the semantic styling vocabulary shared by TUI and CLI.
 type Tokens struct {
+	BG          color.Color // canonical terminal background the theme targets
 	FG          color.Color
 	Muted       color.Color
 	Subtle      color.Color
@@ -34,6 +35,8 @@ type Theme struct {
 	Tokens Tokens
 	Dark   bool
 	Mono   bool
+
+	headerMix float64 // option-colour fraction in a column header band (A5)
 
 	Title        lipgloss.Style
 	ColumnHeader lipgloss.Style
@@ -65,7 +68,13 @@ func build(dark bool, mono bool) *Theme {
 	if mono {
 		toks = monoTokens()
 	}
-	t := &Theme{Tokens: toks, Dark: dark, Mono: mono}
+	t := &Theme{Tokens: toks, Dark: dark, Mono: mono, headerMix: 0.30}
+	if !dark {
+		t.headerMix = 0.18
+	}
+	if mono {
+		t.headerMix = 0
+	}
 	t.Title = lipgloss.NewStyle().Bold(true).Foreground(toks.FG)
 	t.ColumnHeader = lipgloss.NewStyle().Bold(true).Foreground(toks.FG)
 	t.CardTitle = lipgloss.NewStyle().Foreground(toks.FG)
@@ -79,8 +88,69 @@ func build(dark bool, mono bool) *Theme {
 		Padding(0, 1)
 	t.CardFocused = lipgloss.NewStyle().
 		Border(lipgloss.ThickBorder()).BorderForeground(toks.BorderFocus).
+		Background(toks.SelectionBG).
 		Padding(0, 1)
 	return t
+}
+
+// HeaderBand is the column-header style (A5): bold FG on a background
+// mixed from the column's option colour toward the theme background.
+// In monochrome the band is bold only.
+func (t *Theme) HeaderBand(optionColor string) lipgloss.Style {
+	if t.Mono || t.headerMix == 0 {
+		return t.ColumnHeader
+	}
+	return t.ColumnHeader.Background(mix(t.OptionColor(optionColor), t.Tokens.BG, t.headerMix))
+}
+
+// HeaderBandBG exposes the derived band background for contrast tests.
+func (t *Theme) HeaderBandBG(optionColor string) color.Color {
+	if t.Mono || t.headerMix == 0 {
+		return t.Tokens.BG
+	}
+	return mix(t.OptionColor(optionColor), t.Tokens.BG, t.headerMix)
+}
+
+// ColumnBorder is the unfocused card border for a column (A5): the
+// neutral border mixed halfway toward the option colour.
+func (t *Theme) ColumnBorder(optionColor string) color.Color {
+	if t.Mono {
+		return t.Tokens.Border
+	}
+	return mix(t.OptionColor(optionColor), t.Tokens.Border, 0.5)
+}
+
+// Stripe is the card accent-stripe style in the column's option colour.
+func (t *Theme) Stripe(optionColor string) lipgloss.Style {
+	return lipgloss.NewStyle().Foreground(t.OptionColor(optionColor))
+}
+
+// mix blends fg over bg with fg fraction t (0..1). A nil colour
+// yields bg; callers guard the monochrome theme, whose tokens are
+// empty colours, before mixing.
+func mix(fg, bg color.Color, t float64) color.Color {
+	f, okF := hexRGB(fg)
+	b, okB := hexRGB(bg)
+	if !okF || !okB {
+		return bg
+	}
+	ch := func(x, y uint64) uint64 {
+		return uint64(float64(x)*t + float64(y)*(1-t) + 0.5)
+	}
+	return lipgloss.Color("#" + hex2(ch(f[0], b[0])) + hex2(ch(f[1], b[1])) + hex2(ch(f[2], b[2])))
+}
+
+func hexRGB(c color.Color) ([3]uint64, bool) {
+	if c == nil {
+		return [3]uint64{}, false
+	}
+	r, g, b, _ := c.RGBA()
+	return [3]uint64{uint64(r >> 8), uint64(g >> 8), uint64(b >> 8)}, true
+}
+
+func hex2(v uint64) string {
+	const digits = "0123456789ABCDEF"
+	return string([]byte{digits[v>>4&0xF], digits[v&0xF]})
 }
 
 // OptionColor maps a GitHub option colour name to the curated token,
@@ -94,6 +164,7 @@ func (t *Theme) OptionColor(name string) color.Color {
 
 func darkTokens() Tokens {
 	return Tokens{
+		BG:          lipgloss.Color("#0D1117"),
 		FG:          lipgloss.Color("#E6EDF3"),
 		Muted:       lipgloss.Color("#9DA7B3"),
 		Subtle:      lipgloss.Color("#6E7B8B"),
@@ -119,6 +190,7 @@ func darkTokens() Tokens {
 
 func lightTokens() Tokens {
 	return Tokens{
+		BG:          lipgloss.Color("#FFFFFF"),
 		FG:          lipgloss.Color("#1F2328"),
 		Muted:       lipgloss.Color("#59636E"),
 		Subtle:      lipgloss.Color("#818C98"),
@@ -145,7 +217,7 @@ func lightTokens() Tokens {
 func monoTokens() Tokens {
 	none := lipgloss.Color("")
 	return Tokens{
-		FG: none, Muted: none, Subtle: none, Border: none,
+		BG: none, FG: none, Muted: none, Subtle: none, Border: none,
 		BorderFocus: none, Accent: none, SelectionBG: none,
 		Success: none, Warning: none, Danger: none,
 		Options: map[string]color.Color{

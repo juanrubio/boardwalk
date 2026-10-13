@@ -36,6 +36,21 @@ func TestWCAGAAContrast(t *testing.T) {
 				t.Errorf("%s %s contrast %.2f < 4.5", tc.name, name, ratio)
 			}
 		}
+		// (A5) FG on every derived header band, and Meta on the
+		// focused card's selection background, must also meet AA.
+		for _, o := range []string{"GRAY", "BLUE", "GREEN", "YELLOW", "ORANGE", "RED", "PINK", "PURPLE"} {
+			band := parseColor(t, tc.th.HeaderBandBG(o))
+			if band == bg {
+				t.Errorf("%s %s header band was not tinted (equals terminal bg)", tc.name, o)
+			}
+			if ratio := contrastRatio(parseColor(t, tc.th.Tokens.FG), band); ratio < 4.5 {
+				t.Errorf("%s FG on %s header band contrast %.2f < 4.5", tc.name, o, ratio)
+			}
+		}
+		sel := parseColor(t, tc.th.Tokens.SelectionBG)
+		if ratio := contrastRatio(parseColor(t, tc.th.Tokens.Muted), sel); ratio < 4.5 {
+			t.Errorf("%s Meta on SelectionBG contrast %.2f < 4.5", tc.name, ratio)
+		}
 	}
 }
 

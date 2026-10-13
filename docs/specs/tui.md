@@ -306,9 +306,10 @@ Comfortable cards, list rows, and CLI output never shorten references.
 The focused card is unmistakable without colour: a drawn border plus a
 focus marker in addition to any highlight. Cards carry no decoration
 that does not encode data. *(A1)* **Focus never reflows the layout.**
-Every comfortable card reserves its border cells, drawn in the `subtle`
-token when unfocused. Every compact card reserves its gutter cell, blank
-when unfocused and `▌` when focused. Moving focus changes only the
+Every comfortable card reserves its border cells, tinted toward the
+column colour when unfocused *(A5)*. Every compact card reserves its
+gutter cell, `▎` in the column colour when unfocused and `▌` when
+focused *(A5)*. Moving focus changes only the
 style, never a card's size.
 
 ### Colour and symbols
@@ -325,6 +326,20 @@ style, never a card's size.
   single-select chips (for example Priority) on cards, rows, and detail.
   An option's `description` is shown in the grouping picker and in
   detail.
+- *(A5)* **Column identity (owner decision B).** Each column header is
+  a one-row tinted band: bold `fg` text on a background derived from
+  the column's option colour (mixed toward the theme background —
+  30% colour in dark themes, 18% in light), spanning the full column
+  width. Every card carries its column's identity: a `▎` accent
+  stripe in the full option colour as the first content cell of each
+  card line, and an unfocused border tinted halfway from the neutral
+  `border` token toward the option colour. Cards otherwise stay
+  neutral (no full card background). The focused card keeps the
+  thick `borderFocus` border and gains the `selectionBg` background,
+  so focus remains findable across columns. In monochrome the band
+  is unstyled, and identity falls back to the stripe glyph, border,
+  and header text. Header-band text meets WCAG AA against every
+  derived band background, as does `meta` on `selectionBg`.
 - Styles adapt to the terminal's colour profile (truecolour, 256, and
   monochrome must all remain legible) and to light/dark terminals.
   In monochrome, hierarchy comes from weight, borders, and markers.
@@ -364,7 +379,7 @@ colours or ad-hoc padding.
   A thick border plus `▸` marks focus. Modal overlays (help, archive
   confirm, pickers) use a rounded border drawn over a dimmed board.
 - **Typography roles:** `title` (bold, `fg`), `columnHeader` (bold,
-  option tint plus name), `cardTitle` (`fg`, bold when focused), `meta`
+  `fg` on the column's tinted band, *(A5)*), `cardTitle` (`fg`, bold when focused), `meta`
   (`muted`), `keyHint` (key in `accent`, label in `muted`), `error`
   (`danger` plus `✗`), and `success` (`success` plus `✓`).
 - **Relative time:** dates and iterations render with relative labels

@@ -1,9 +1,9 @@
 [1mBoardwalk · SnazzyEmail (fixture) (fixture-user/1) · Gr…[m updated 4m ago · ? Help
 [1mBacklog (4)[m                              [1mReady (1)[m                              
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─────────────────────────────────────╮
-┃ ▸Fixture issue item 04               ┃ │  Fixture issue item 01              │
-┃   issue fixture/repo#8               ┃ │   issue fixture/repo#32             │
-┃                                      ┃ │                                     │
+┃ ▎▸Fixture issue item 04              ┃ │ ▎ Fixture issue item 01             │
+┃ ▎ issue fixture/repo#8               ┃ │ ▎ issue fixture/repo#32             │
+┃ ▎                                    ┃ │ ▎                                   │
                 ╭──────────────────────────────────────────────╮                
                 │ ─ Keys ───────────────────────────────────── │                
                 │ ↑↓/jk card     ←→/hl column  H/L move        │                
@@ -16,9 +16,9 @@
                 │ ? this help    q quit        Esc back        │                
                 ╰──────────────────────────────────────────────╯                
 ╭──────────────────────────────────────╮                                        
-│  Fixture issue item 13               │                                        
-│   issue fixture/repo#39              │                                        
-│                                      │                                        
+│ ▎ Fixture issue item 13              │                                        
+│ ▎ issue fixture/repo#39              │                                        
+│ ▎                                    │                                        
 ╰──────────────────────────────────────╯                                        
                                                                                 
 ? close help · Esc back

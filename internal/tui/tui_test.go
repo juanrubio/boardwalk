@@ -293,7 +293,7 @@ func TestCardGeometryWideTitle(t *testing.T) {
 		Title: "💰 Add annual billing option ($15/month per seat)",
 		Repo:  "juanrubio/snazzyemail", Number: 8,
 	}
-	card := m.comfortableCard(it, 36, true)
+	card := m.comfortableCard(it, 36, true, "GREEN")
 	lines := strings.Split(card, "\n")
 	if len(lines) != 5 {
 		t.Fatalf("card has %d lines, want 5:\n%s", len(lines), card)
@@ -440,7 +440,7 @@ func TestCardGeometryBareEmojiTitle(t *testing.T) {
 		Title: "🖥Server maintenance (move Docker to /home)",
 	}
 	for _, w := range []int{56, 36, 30} {
-		card := m.comfortableCard(it, w, true)
+		card := m.comfortableCard(it, w, true, "GREEN")
 		lines := strings.Split(card, "\n")
 		if len(lines) != 5 {
 			t.Fatalf("w=%d: card has %d lines:\n%s", w, len(lines), card)
@@ -468,7 +468,7 @@ func TestCardGeometryVTEMode(t *testing.T) {
 		ID: "E2", Kind: githubx.KindDraft, DatabaseID: 157092128,
 		Title: "🖥️ Server maintenance (move Docker to /home)",
 	}
-	card := m.comfortableCard(it, 56, true)
+	card := m.comfortableCard(it, 56, true, "GREEN")
 	lines := strings.Split(card, "\n")
 	if len(lines) != 5 {
 		t.Fatalf("card has %d lines:\n%s", len(lines), card)

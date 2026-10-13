@@ -1,24 +1,24 @@
 [1mBoardwalk · SnazzyEmail (fixture) (fixture-user/1) · Grouped by Status · 14 items[m                updated 4m ago · ? Help
 [1mBacklog (4)[m                                              4 cols ▸      │[1mFixture issue item 04[m
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓               │─────────────────────────────────────────────
-┃ ▸Fixture issue item 04                               ┃               │Kind:     issue · fixture/repo#8
-┃   issue fixture/repo#8                               ┃               │URL:      https://github.com/fixture/repo/issues
-┃                                                      ┃               │Assignees: -
+┃ ▎▸Fixture issue item 04                              ┃               │Kind:     issue · fixture/repo#8
+┃ ▎ issue fixture/repo#8                               ┃               │URL:      https://github.com/fixture/repo/issues
+┃ ▎                                                    ┃               │Assignees: -
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛               │Status:    ● Backlog
 ╭──────────────────────────────────────────────────────╮               │Labels:    -
-│  Fixture issue item 05                               │               │Linked pull requests: -
-│   issue fixture/repo#12                              │               │Milestone: -
-│                                                      │               │Repository: -
+│ ▎ Fixture issue item 05                              │               │Linked pull requests: -
+│ ▎ issue fixture/repo#12                              │               │Milestone: -
+│ ▎                                                    │               │Repository: -
 ╰──────────────────────────────────────────────────────╯               │Reviewers: -
 ╭──────────────────────────────────────────────────────╮               │Parent issue: -
-│  Fixture issue item 06                               │               │Sub-issues progress: -
-│   issue fixture/repo#18                              │               │Priority:  -
-│                                                      │               │Size:      -
+│ ▎ Fixture issue item 06                              │               │Sub-issues progress: -
+│ ▎ issue fixture/repo#18                              │               │Priority:  -
+│ ▎                                                    │               │Size:      -
 ╰──────────────────────────────────────────────────────╯               │Estimate:  -
 ╭──────────────────────────────────────────────────────╮               │Start date: -
-│  Fixture issue item 13                               │               │Target date: -
-│   issue fixture/repo#39                              │               │Created:   -
-│                                                      │               │Updated:   -
+│ ▎ Fixture issue item 13                              │               │Target date: -
+│ ▎ issue fixture/repo#39                              │               │Created:   -
+│ ▎                                                    │               │Updated:   -
 ╰──────────────────────────────────────────────────────╯               │Closed:    -
                                                                        │
                                                                        │Fixture body rendered for the golden frame.

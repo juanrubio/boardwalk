@@ -450,11 +450,8 @@ func (m *model) renderKanban(w, h int) string {
 		if vc.col.collapsed {
 			label = fmt.Sprintf("%s (%d) [z]", truncateRunes(vc.col.label, 9), len(vc.col.items))
 		}
-		style := m.theme.ColumnHeader
-		if vc.col.color != "" && !m.theme.Mono {
-			style = style.Foreground(m.theme.OptionColor(vc.col.color))
-		}
-		headerParts = append(headerParts, padRightStyled(style.Render(truncateRunes(label, vc.width)), vc.width))
+		band := m.theme.HeaderBand(vc.col.color)
+		headerParts = append(headerParts, band.Width(vc.width).Render(truncateRunes(label, vc.width)))
 	}
 	header := strings.Join(headerParts, " ")
 	// off-screen hints
@@ -487,8 +484,6 @@ func (m *model) renderKanban(w, h int) string {
 	}
 	return strings.Join(lines, "\n")
 }
-
-func padRightStyled(s string, w int) string { return padVisible(s, w) }
 
 func (m *model) ensureColVisible(w, cw int) {
 	// Estimate: count columns fitting from colOffset
@@ -539,7 +534,7 @@ func (m *model) renderColumn(col column, width, bodyH int, focusedCol bool) []st
 		for i := start; i < len(col.items) && idx < per; i++ {
 			it := col.items[i]
 			focused := focusedCol && i == m.row
-			l1, l2 := m.compactCardLines(it, width, focused)
+			l1, l2 := m.compactCardLines(it, width, focused, col.color)
 			lines[idx*2] = l1
 			if idx*2+1 < bodyH {
 				lines[idx*2+1] = l2
@@ -556,7 +551,7 @@ func (m *model) renderColumn(col column, width, bodyH int, focusedCol bool) []st
 	start := scrollStart(m.row, per, focusedCol)
 	idx := 0
 	for i := start; i < len(col.items) && idx < per; i++ {
-		card := m.comfortableCard(col.items[i], width, focusedCol && i == m.row)
+		card := m.comfortableCard(col.items[i], width, focusedCol && i == m.row, col.color)
 		cl := strings.Split(card, "\n")
 		if len(cl) > 5 { // fixed card geometry (mockups.md): never taller
 			cl = cl[:5]
@@ -594,9 +589,11 @@ func (m *model) cardMarker(it githubx.Item) string {
 	return ""
 }
 
-func (m *model) comfortableCard(it githubx.Item, width int, focused bool) string {
+func (m *model) comfortableCard(it githubx.Item, width int, focused bool, colColor string) string {
 	inner := max(4, width-4) // border 2 + padding 2
-	title := truncateRunes(m.displayTitle(it.Title), inner-2)
+	// The first content cell is the column accent stripe (A5); the
+	// remaining body keeps the pre-A5 text budget minus that cell.
+	title := truncateRunes(m.displayTitle(it.Title), inner-3)
 	if focused {
 		title = "▸" + title
 	} else {
@@ -604,9 +601,9 @@ func (m *model) comfortableCard(it githubx.Item, width int, focused bool) string
 	}
 	marker := m.cardMarker(it)
 	if marker != "" {
-		title = truncateRunes(marker+m.displayTitle(it.Title), inner)
+		title = truncateRunes(marker+m.displayTitle(it.Title), inner-1)
 		if focused {
-			title = "▸" + truncateRunes(marker+m.displayTitle(it.Title), inner-1)
+			title = "▸" + truncateRunes(marker+m.displayTitle(it.Title), inner-2)
 		}
 	}
 	kindRef := string(it.Kind) + " " + it.Ref()
@@ -617,7 +614,7 @@ func (m *model) comfortableCard(it githubx.Item, width int, focused bool) string
 		// full reference stays in detail, list view, and on copy.
 		kindRef = fmt.Sprintf("%s …#%d", it.Kind, it.Number)
 	}
-	line2 := "  " + truncateRunes(kindRef, inner-2)
+	line2 := " " + truncateRunes(kindRef, inner-2)
 	meta := assigneeOf(it)
 	pairs := metaPairs(it, m.groupField.Name)
 	if len(pairs) > 0 {
@@ -626,25 +623,29 @@ func (m *model) comfortableCard(it githubx.Item, width int, focused bool) string
 		}
 		meta += strings.Join(pairs, " · ")
 	}
-	line3 := "  " + truncateRunes(meta, inner-2)
+	line3 := " " + truncateRunes(meta, inner-2)
+	stripe := m.theme.Stripe(colColor).Render("▎")
 	content := strings.Join([]string{
-		m.theme.CardTitle.Render(title),
-		m.theme.Meta.Render(line2),
-		m.theme.Meta.Render(line3),
+		stripe + m.theme.CardTitle.Render(title),
+		stripe + m.theme.Meta.Render(line2),
+		stripe + m.theme.Meta.Render(line3),
 	}, "\n")
 	style := m.theme.Card
 	if focused {
 		style = m.theme.CardFocused
+	} else {
+		style = style.BorderForeground(m.theme.ColumnBorder(colColor))
 	}
 	// Lip Gloss Width is the total card width (border+padding+text),
 	// so text area is width-4, matching inner above.
 	return style.Width(width).Render(content)
 }
 
-func (m *model) compactCardLines(it githubx.Item, width int, focused bool) (string, string) {
-	gutter := " "
+func (m *model) compactCardLines(it githubx.Item, width int, focused bool, colColor string) (string, string) {
+	// Gutter cell (A5): column-colour stripe, focus block when focused.
+	gutter := m.theme.Stripe(colColor).Render("▎")
 	if focused {
-		gutter = "▌"
+		gutter = lipgloss.NewStyle().Foreground(m.theme.Tokens.BorderFocus).Render("▌")
 	}
 	title := m.cardMarker(it) + m.displayTitle(it.Title)
 	// highlight search match by underline via style when filtered
@@ -676,8 +677,8 @@ func (m *model) compactCardLines(it githubx.Item, width int, focused bool) (stri
 			kindRef = cand
 		}
 	}
-	line2 := gutter + truncateRunes(kindRef, width-1)
-	return line1, m.theme.Meta.Render(line2)
+	line2 := gutter + m.theme.Meta.Render(truncateRunes(kindRef, width-1))
+	return line1, line2
 }
 
 // --- List ---
