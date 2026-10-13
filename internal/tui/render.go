@@ -350,7 +350,7 @@ func (m *model) renderKanban(w, h int) string {
 	if hiddenRight > 0 {
 		hint := fmt.Sprintf("%d cols ▸", hiddenRight)
 		// append if fits, else replace tail
-		if lipgloss.Width(header)+1+len(hint) <= w {
+		if lipgloss.Width(header)+1+len([]rune(hint)) <= w {
 			header += " " + hint
 		}
 	}

@@ -115,6 +115,16 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setFocusedByID(msg.item.ID)
 		m.footer = "Added " + msg.item.Ref()
 		return m, nil
+	case editorDoneMsg:
+		if msg.err != nil {
+			m.footer = "Editor failed: " + msg.err.Error()
+			return m, nil
+		}
+		if m.form != nil && msg.fieldIdx >= 0 && msg.fieldIdx < len(m.form.fields) {
+			m.form.fields[msg.fieldIdx].newVal = msg.body
+			m.footer = "Body updated from editor."
+		}
+		return m, nil
 	case tea.KeyPressMsg:
 		return m.onKey(msg)
 	}

@@ -144,6 +144,12 @@ type (
 	}
 )
 
+type editorDoneMsg struct {
+	body     string
+	fieldIdx int
+	err      error
+}
+
 type addResultMsg struct {
 	item    githubx.Item
 	already bool

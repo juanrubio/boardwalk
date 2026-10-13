@@ -2,6 +2,8 @@ package tui
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -231,10 +233,47 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 		m.pane = paneSummary
 		return m, nil
 	case "ctrl+e":
-		// $EDITOR handoff is available in CLI edit; in TUI the body
-		// field itself is the multi-line editor (spec fallback).
-		m.footer = "Edit the Body field here, or use `boardwalk item edit --editor`."
-		return m, nil
+		// $VISUAL/$EDITOR handoff for the Body field (tui.md §4): the
+		// TUI suspends while the editor runs; saved text returns dirty.
+		editor := os.Getenv("VISUAL")
+		if editor == "" {
+			editor = os.Getenv("EDITOR")
+		}
+		if editor == "" {
+			m.footer = "No $VISUAL/$EDITOR set; edit the Body field here."
+			return m, nil
+		}
+		bodyIdx := -1
+		for i, ff := range f.fields {
+			if ff.name == "Body" {
+				bodyIdx = i
+			}
+		}
+		if bodyIdx < 0 {
+			return m, nil
+		}
+		tmp, err := os.CreateTemp("", "boardwalk-body-*.md")
+		if err != nil {
+			m.footer = "Editor handoff failed: " + err.Error()
+			return m, nil
+		}
+		path := tmp.Name()
+		_, _ = tmp.WriteString(f.fields[bodyIdx].newVal)
+		_ = tmp.Close()
+		parts := strings.Fields(editor)
+		args := append(append([]string{}, parts[1:]...), path)
+		cmd := exec.Command(parts[0], args...) //nolint:gosec // user's configured editor
+		return m, tea.ExecProcess(cmd, func(err error) tea.Msg {
+			data, rerr := os.ReadFile(path) //nolint:gosec // our own temp file
+			_ = os.Remove(path)
+			if err != nil {
+				return editorDoneMsg{err: err}
+			}
+			if rerr != nil {
+				return editorDoneMsg{err: rerr}
+			}
+			return editorDoneMsg{body: string(data), fieldIdx: bodyIdx}
+		})
 	case "tab", "down":
 		if f.idx < len(f.fields)-1 {
 			f.idx++
