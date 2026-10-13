@@ -12,6 +12,14 @@ import (
 	"github.com/juanrubio/gh-boardwalk/internal/githubx"
 )
 
+// repaintCmd forces the renderer to repaint the whole frame. The
+// diff renderer can drift a few cells behind terminals whose width
+// tables differ from its own (observed in Kitty); a full repaint on
+// modal transitions keeps borders aligned.
+func repaintCmd() tea.Cmd {
+	return func() tea.Msg { return tea.ClearScreen() }
+}
+
 func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	key := msg.Key()
 	s := msg.String()
@@ -173,9 +181,9 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.pane = paneDetail
 		m.detail = &it
 		focusCmd := m.startEdit(it)
-		return m, tea.Batch(focusCmd, m.loadDetailCmd(it.ID))
+		return m, tea.Batch(focusCmd, m.loadDetailCmd(it.ID), repaintCmd())
 	case "n":
-		return m, m.startNewDraft()
+		return m, tea.Batch(m.startNewDraft(), repaintCmd())
 	case "a":
 		m.overlay = overlayAdd
 		m.addText, m.addPreview = "", ""

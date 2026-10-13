@@ -12,23 +12,23 @@
      │   [30m                                                                                                    [m     │     
      │   [30m                                                                                                    [m     │     
      │   [30m                                                                                                    [m     │     
-     │   Assignees:             (read-only: ASSIGNEES is edited with `item edit` in the MVP)                      │     
+     │   Assignees:            (read-only)                                                                        │     
      │   Status:               Backlog                                                                            │     
-     │   Labels:                (read-only: LABELS is edited with `item edit` in the MVP)                         │     
-     │   Linked pull requests:  (read-only: LINKED_PULL_REQUESTS is edited with `item edit` in the MVP)           │     
-     │   Milestone:             (read-only: MILESTONE is edited with `item edit` in the MVP)                      │     
-     │   Repository:            (read-only: REPOSITORY is edited with `item edit` in the MVP)                     │     
-     │   Reviewers:             (read-only: REVIEWERS is edited with `item edit` in the MVP)                      │     
-     │   Parent issue:          (read-only: PARENT_ISSUE is edited with `item edit` in the MVP)                   │     
-     │   Sub-issues progress:   (read-only: SUB_ISSUES_PROGRESS is edited with `item edit` in the MVP)            │     
+     │   Labels:               (read-only)                                                                        │     
+     │   Linked pull requests: (read-only)                                                                        │     
+     │   Milestone:            (read-only)                                                                        │     
+     │   Repository:           (read-only)                                                                        │     
+     │   Reviewers:            (read-only)                                                                        │     
+     │   Parent issue:         (read-only)                                                                        │     
+     │   Sub-issues progress:  (read-only)                                                                        │     
      │   Priority:                                                                                                │     
      │   Size:                                                                                                    │     
      │   Estimate:             [37m[m[37m[m [37m                                                                                …[m │     
      │   Start date:           [37m[m[37m[m [37m                                                                                …[m │     
      │   Target date:          [37m[m[37m[m [37m                                                                                …[m │     
-     │   Created:               (read-only: CREATED is edited with `item edit` in the MVP)                        │     
-     │   Updated:               (read-only: UPDATED is edited with `item edit` in the MVP)                        │     
-     │   Closed:                (read-only: CLOSED is edited with `item edit` in the MVP)                         │     
+     │   Created:              (read-only)                                                                        │     
+     │   Updated:              (read-only)                                                                        │     
+     │   Closed:               (read-only)                                                                        │     
      │                                                                                                            │     
      │ ● = changed · Type to edit, arrows move the cursor · Tab field · Ctrl-E $EDITOR · Ctrl-S review & save ·   │     
      │ Esc back                                                                                                   │     

@@ -170,7 +170,10 @@ func (m *model) renderForm(w, h int) string {
 		var val string
 		switch {
 		case ff.readonly:
-			val = ff.oldDisp + " (read-only: " + ff.reason + ")"
+			val = "(read-only)"
+			if ff.oldDisp != "" {
+				val = ff.oldDisp + "  (read-only)"
+			}
 		case ff.kind == "select" || ff.kind == "iteration":
 			val = ff.value()
 			if i == f.idx {

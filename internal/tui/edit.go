@@ -171,7 +171,7 @@ func (m *model) startEdit(it githubx.Item) tea.Cmd {
 			default:
 				ff.kind = "readonly"
 				ff.readonly = true
-				ff.reason = fld.DataType + " is edited with `item edit` in the MVP"
+				ff.reason = fld.DataType
 			}
 			f.fields = append(f.fields, ff)
 		}
@@ -362,7 +362,7 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 				changes: []core.Change{{Field: "Draft", Old: "-", New: title}},
 			}
 			m.pane = paneSummary
-			return m, nil
+			return m, repaintCmd()
 		}
 		changes, err := m.formChanges()
 		if err != nil {
@@ -375,7 +375,7 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 		}
 		m.summary = &summaryState{changes: changes}
 		m.pane = paneSummary
-		return m, nil
+		return m, repaintCmd()
 	case "ctrl+e":
 		// $VISUAL/$EDITOR handoff for the Body field (tui.md §4): the
 		// TUI suspends while the editor runs; saved text returns dirty.
@@ -438,7 +438,7 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 			return m, nil
 		}
 		m.pane, m.form = paneNone, nil
-		return m, nil
+		return m, repaintCmd()
 	case "enter":
 		cur := f.fields[f.idx]
 		if cur.kind == "select" || cur.kind == "iteration" {
