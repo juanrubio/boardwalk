@@ -210,6 +210,8 @@ for the most common board action).
 The board is a compact kanban with one slim header and the §2
 contextual footer as its only chrome. Detail opens beside the board so
 context is never lost while scanning, opening, editing, or moving.
+*(A1)* Full character-cell layouts for all states and densities are
+recorded in [mockups.md](mockups.md).
 
 ### Layout
 
