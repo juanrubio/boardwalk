@@ -124,9 +124,9 @@ fragment BoardItem on ProjectV2Item {
   id databaseId type isArchived
   content {
     __typename
-    ... on Issue { number title url body assignees(first: 10) { nodes { login } } repository { nameWithOwner } }
-    ... on PullRequest { number title url body assignees(first: 10) { nodes { login } } repository { nameWithOwner } }
-    ... on DraftIssue { title body assignees(first: 10) { nodes { login } } }
+    ... on Issue { id number title url body assignees(first: 10) { nodes { login } } repository { nameWithOwner } }
+    ... on PullRequest { id number title url body assignees(first: 10) { nodes { login } } repository { nameWithOwner } }
+    ... on DraftIssue { id title body assignees(first: 10) { nodes { login } } }
   }
   fieldValues(first: 50) {
     nodes {

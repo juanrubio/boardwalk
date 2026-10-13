@@ -109,6 +109,7 @@ const (
 // Bodies are never carried here (performance.md: no bodies in lists).
 type Item struct {
 	ID         string // node ID (PVTI_...)
+	ContentID  string // content node ID (Issue/PR/DraftIssue); edits target this, never ID
 	DatabaseID int64  // numeric ID used by draft:<id> references
 	Kind       Kind
 	Title      string

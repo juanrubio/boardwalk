@@ -9,7 +9,7 @@
      │ Applied (GitHub confirmed):                                                                                │     
      │   ✓ Status: Ready → In Progress                                                                            │     
      │                                                                                                            │     
-     │ Failed (nothing else was changed):                                                                         │     
+     │ Failed:                                                                                                    │     
      │   ✗ Estimate: 3 → 5                                                                                        │     
      │     GitHub rejected the request (FORBIDDEN)                                                                │     
      │                                                                                                            │     

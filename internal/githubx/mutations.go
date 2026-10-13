@@ -242,6 +242,24 @@ func (c *gqlClient) SetFieldValues(ctx context.Context, projectID, itemID string
 	return results
 }
 
+// resolveDraftIssueID maps a project item ID to its DraftIssue node
+// ID via the item's content.
+func (c *gqlClient) resolveDraftIssueID(ctx context.Context, itemID string) (string, error) {
+	q := `query($id: ID!) { node(id: $id) { ... on ProjectV2Item { content { ... on DraftIssue { id } } } } }`
+	var resp struct {
+		Node *struct {
+			Content struct{ ID string }
+		}
+	}
+	if err := c.do(ctx, q, map[string]interface{}{"id": itemID}, &resp); err != nil {
+		return "", err
+	}
+	if resp.Node == nil || resp.Node.Content.ID == "" {
+		return "", exiterr.NotFoundf("could not resolve a draft issue for item %s", itemID)
+	}
+	return resp.Node.Content.ID, nil
+}
+
 // ---- Title/body, archive ---------------------------------------------------
 
 func (c *gqlClient) UpdateTitleBody(ctx context.Context, item Item, title, body *string) (Item, error) {
@@ -250,9 +268,22 @@ func (c *gqlClient) UpdateTitleBody(ctx context.Context, item Item, title, body 
 	}
 	out := item
 	if item.Kind == KindDraft {
+		// updateProjectV2DraftIssue wants the DraftIssue node ID
+		// (PVTDI_…), never the project item ID (PVTI_…): GitHub
+		// refuses the latter as unresolvable. Older items (snapshots
+		// predating ContentID) resolve it from the item first.
+		draftID := item.ContentID
+		if draftID == "" {
+			resolved, err := c.resolveDraftIssueID(ctx, item.ID)
+			if err != nil {
+				return Item{}, err
+			}
+			draftID = resolved
+		}
+		out.ContentID = draftID
 		var sb strings.Builder
 		sb.WriteString("mutation BoardwalkDraftEdit($id: ID!")
-		vars := map[string]interface{}{"id": item.ID}
+		vars := map[string]interface{}{"id": draftID}
 		if title != nil {
 			sb.WriteString(", $title: String!")
 			vars["title"] = *title

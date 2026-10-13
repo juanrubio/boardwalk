@@ -266,20 +266,28 @@ func (m *model) renderSummary(w, h int) string {
 		return strings.Join(splitLines(b.String(), h), "\n")
 	}
 	// Sent: per-field results
-	b.WriteString("Applied (GitHub confirmed):\n")
-	anyFail := false
-	for _, r := range s.results {
-		if r.Err == nil {
-			b.WriteString(m.theme.Success.Render(fmt.Sprintf("  ✓ %s: %s → %s", r.Change.Field, dash(r.Change.Old), r.Change.New)) + "\n")
-		}
-	}
+	anyFail, anyOK := false, false
 	for _, r := range s.results {
 		if r.Err != nil {
 			anyFail = true
+		} else {
+			anyOK = true
+		}
+	}
+	if anyOK {
+		b.WriteString("Applied (GitHub confirmed):\n")
+		for _, r := range s.results {
+			if r.Err == nil {
+				b.WriteString(m.theme.Success.Render(fmt.Sprintf("  ✓ %s: %s → %s", r.Change.Field, dash(r.Change.Old), r.Change.New)) + "\n")
+			}
 		}
 	}
 	if anyFail {
-		b.WriteString("\nFailed (nothing else was changed):\n")
+		failedHead := "\nFailed:\n"
+		if !anyOK {
+			failedHead = "Failed (nothing else was changed):\n"
+		}
+		b.WriteString(failedHead)
 		for _, r := range s.results {
 			if r.Err != nil {
 				b.WriteString(m.theme.Error.Render(fmt.Sprintf("  ✗ %s: %s → %s", r.Change.Field, dash(r.Change.Old), r.Change.New)) + "\n")

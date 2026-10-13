@@ -96,6 +96,7 @@ type gqlItem struct {
 	IsArchived bool
 	Content    struct {
 		Typename   string `json:"__typename"`
+		ID         string
 		Number     int
 		Title      string
 		URL        string
@@ -115,7 +116,7 @@ func (g gqlItem) toItem(fields []Field) Item {
 		kind = KindPR
 	}
 	it := Item{
-		ID: g.ID, DatabaseID: g.DatabaseID, Kind: kind,
+		ID: g.ID, ContentID: g.Content.ID, DatabaseID: g.DatabaseID, Kind: kind,
 		Title: g.Content.Title, URL: g.Content.URL, Body: g.Content.Body,
 		Archived: g.IsArchived,
 	}
