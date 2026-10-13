@@ -113,12 +113,6 @@ func (m *model) overlayCenter(body, box string, w, h int) string {
 	}
 	left := max(0, (w-boxW)/2)
 	pad := strings.Repeat(" ", left)
-	if !m.theme.Mono {
-		bg := lipgloss.NewStyle().Background(m.theme.Tokens.SelectionBG)
-		for i, bl := range boxLines {
-			boxLines[i] = bg.Render(bl)
-		}
-	}
 	start := max(0, (h-len(boxLines))/2)
 	for i, bl := range boxLines {
 		if start+i < len(lines) {
