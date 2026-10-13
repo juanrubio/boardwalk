@@ -41,9 +41,10 @@ type Client interface {
 	// board scan; cli.md Section 1).
 	ResolveContent(ctx context.Context, ref string) (contentID string, item Item, err error)
 
-	// SetFieldValue sets one project field on one item and returns the
-	// item's updated displayed fields from the mutation payload.
-	SetFieldValue(ctx context.Context, projectID, itemID, fieldID string, value MutationValue) (Item, error)
+	// SetFieldValues applies several field assignments to one item as
+	// ONE GraphQL request (performance.md: a save is one round trip)
+	// and reports per-field results; a save is not atomic (tui.md).
+	SetFieldValues(ctx context.Context, projectID, itemID string, assigns []FieldAssign) []FieldResult
 
 	// UpdateTitleBody edits a linked issue/PR or draft title/body where
 	// GitHub permits it, returning the updated item.
@@ -51,6 +52,19 @@ type Client interface {
 
 	// ArchiveItem archives a project item.
 	ArchiveItem(ctx context.Context, projectID, itemID string) error
+}
+
+// FieldAssign is one named field assignment in a batch save.
+type FieldAssign struct {
+	FieldID   string
+	FieldName string
+	Value     MutationValue
+}
+
+// FieldResult is the per-field outcome of a batch save.
+type FieldResult struct {
+	FieldName string
+	Err       error // nil when GitHub applied the change
 }
 
 // MutationValue is one typed field assignment.

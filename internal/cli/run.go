@@ -24,22 +24,6 @@ func unimplemented(opts *Options, what string) error {
 	return exiterr.Failuref("%s is not implemented yet in this build step", what)
 }
 
-func runItemAdd(_ context.Context, opts *Options, _ string, _ bool, _, _ string) error {
-	return unimplemented(opts, "item add")
-}
-
-func runItemEdit(_ context.Context, opts *Options, _ string, _, _ string, _ []string) error {
-	return unimplemented(opts, "item edit")
-}
-
-func runItemMove(_ context.Context, opts *Options, _ string, _, _ string) error {
-	return unimplemented(opts, "item move")
-}
-
-func runItemArchive(_ context.Context, opts *Options, _ string) error {
-	return unimplemented(opts, "item archive")
-}
-
 func runBoard(_ context.Context, opts *Options, _ bool) error {
 	return unimplemented(opts, "board (TUI)")
 }

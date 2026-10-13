@@ -30,6 +30,7 @@ type Options struct {
 
 	Out io.Writer // stdout (defaults to os.Stdout)
 	Err io.Writer // stderr (defaults to os.Stderr)
+	In  io.Reader // stdin (defaults to os.Stdin)
 
 	// NewService builds the shared core service. It is a field so
 	// tests can substitute fixture-backed services. cmd/boardwalk
@@ -44,6 +45,9 @@ func NewRootCmd(opts *Options) *cobra.Command {
 	}
 	if opts.Err == nil {
 		opts.Err = os.Stderr
+	}
+	if opts.In == nil {
+		opts.In = os.Stdin
 	}
 	root := &cobra.Command{
 		Use:   "boardwalk",

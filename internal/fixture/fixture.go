@@ -232,7 +232,16 @@ func (c *Client) CreateDraft(_ context.Context, projectID, title, body string) (
 	return it, nil
 }
 
-func (c *Client) SetFieldValue(_ context.Context, projectID, itemID, fieldID string, value githubx.MutationValue) (githubx.Item, error) {
+func (c *Client) SetFieldValues(ctx context.Context, projectID, itemID string, assigns []githubx.FieldAssign) []githubx.FieldResult {
+	out := make([]githubx.FieldResult, len(assigns))
+	for i, a := range assigns {
+		_, err := c.setFieldValue(ctx, projectID, itemID, a.FieldID, a.Value)
+		out[i] = githubx.FieldResult{FieldName: a.FieldName, Err: err}
+	}
+	return out
+}
+
+func (c *Client) setFieldValue(_ context.Context, projectID, itemID, fieldID string, value githubx.MutationValue) (githubx.Item, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	b, it := c.findItem(itemID)

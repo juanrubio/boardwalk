@@ -104,21 +104,25 @@ func newItemAddCmd(opts *Options) *cobra.Command {
 }
 
 func newItemEditCmd(opts *Options) *cobra.Command {
-	var title, body string
+	var title, body, bodyFile string
+	var editor bool
 	var fields []string
 	cmd := &cobra.Command{
 		Use:   "edit <ref>",
 		Short: "Edit an item's title/body and project fields",
 		Example: `  boardwalk item edit juanrubio/snazzyemail#42 --field "Priority=P0"
-  boardwalk item edit draft:91204910 --title "New title" --dry-run`,
+  boardwalk item edit draft:91204910 --title "New title" --dry-run
+  boardwalk item edit juanrubio/snazzyemail#42 --editor`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runItemEdit(cmd.Context(), opts, args[0], title, body, fields)
+			return runItemEdit(cmd.Context(), opts, editArgs{Ref: args[0], Title: title, Body: body, BodyFile: bodyFile, Editor: editor, Fields: fields})
 		},
 	}
 	f := cmd.Flags()
 	f.StringVar(&title, "title", "", "new title (where GitHub permits)")
 	f.StringVar(&body, "body", "", "new body (where GitHub permits)")
+	f.StringVar(&bodyFile, "body-file", "", "read the new body from this file (mutually exclusive with --body and --editor)")
+	f.BoolVar(&editor, "editor", false, "open the body in $VISUAL/$EDITOR (seeded with the current body)")
 	f.StringArrayVar(&fields, "field", nil, `set a project field, e.g. --field "Status=In Progress" (repeatable)`)
 	return cmd
 }
