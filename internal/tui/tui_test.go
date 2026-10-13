@@ -331,3 +331,56 @@ func TestDeleteTwoStageModal(t *testing.T) {
 		t.Fatal("no focus after delete")
 	}
 }
+
+func TestFluidWidths(t *testing.T) {
+	mk := func(n int) []column {
+		cols := make([]column, n)
+		for i := range cols {
+			cols[i] = column{label: "C"}
+		}
+		return cols
+	}
+	// Owner's case: 5 columns at 180 cells shrink-to-fit, no scrolling.
+	widths, ok := fluidWidths(180, mk(5), 36)
+	if !ok {
+		t.Fatal("180 cells / 5 cols should shrink-to-fit")
+	}
+	sum := 0
+	for _, wd := range widths {
+		if wd < 30 || wd > 56 {
+			t.Fatalf("width %d outside [30,56]", wd)
+		}
+		sum += wd
+	}
+	if sum+4 > 180 {
+		t.Fatalf("widths+gutters = %d > 180", sum+4)
+	}
+	// Cap: 3 columns on a very wide terminal stop at 56.
+	widths, ok = fluidWidths(300, mk(3), 36)
+	if !ok {
+		t.Fatal("cap case should fit")
+	}
+	for _, wd := range widths {
+		if wd != 56 {
+			t.Fatalf("width %d, want cap 56", wd)
+		}
+	}
+	// Too narrow for all: 5 columns at 120 cells cannot shrink enough.
+	if _, ok := fluidWidths(120, mk(5), 36); ok {
+		t.Fatal("120 cells / 5 cols should not fit (window mode)")
+	}
+}
+
+func TestBoardFitsAllColumnsAt180(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	m.width, m.height = 180, 40
+	v := m.View().Content
+	for _, name := range []string{"Backlog", "Ready", "In progress", "In review", "Done"} {
+		if !strings.Contains(v, name) {
+			t.Fatalf("column %q missing at 180 cells:\n%s", name, v)
+		}
+	}
+	if strings.Contains(v, "cols ▸") {
+		t.Fatalf("no off-screen hint expected when everything fits:\n%s", v)
+	}
+}

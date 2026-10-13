@@ -294,11 +294,74 @@ func (m *model) renderBoard(w, h int) string {
 
 // --- Kanban ---
 
+// Preferred column widths (tui.md §3 A3): the board stretches these
+// toward maxColWidth, shrinks them toward shrinkFloor to fit every
+// column without scrolling, and only then falls back to a window.
 func (m *model) colWidth() int {
 	if m.density == "compact" {
 		return 31
 	}
 	return 36
+}
+
+const (
+	maxColWidth    = 56
+	collapsedWidth = 15
+)
+
+func shrinkFloor(minW int) int {
+	if minW <= 31 {
+		return 26
+	}
+	return 30
+}
+
+// fluidWidths shares the total width w evenly among cols (collapsed
+// columns fixed at collapsedWidth). Widths are capped at maxColWidth.
+// It reports false when any column would fall below the shrink floor,
+// meaning the whole set cannot be shown at once.
+func fluidWidths(w int, cols []column, minW int) ([]int, bool) {
+	n := len(cols)
+	if n == 0 {
+		return nil, false
+	}
+	collapsedSum, k := 0, 0
+	for _, c := range cols {
+		if c.collapsed {
+			collapsedSum += collapsedWidth
+		} else {
+			k++
+		}
+	}
+	widths := make([]int, n)
+	if k == 0 {
+		for i := range widths {
+			widths[i] = collapsedWidth
+		}
+		return widths, true
+	}
+	avail := w - (n - 1) - collapsedSum
+	share, rem := avail/k, avail%k
+	if share < shrinkFloor(minW) {
+		return nil, false
+	}
+	idx := 0
+	for i, c := range cols {
+		if c.collapsed {
+			widths[i] = collapsedWidth
+			continue
+		}
+		wd := share
+		if idx < rem {
+			wd++
+		}
+		idx++
+		if wd > maxColWidth {
+			wd = maxColWidth
+		}
+		widths[i] = wd
+	}
+	return widths, true
 }
 
 func (m *model) renderKanban(w, h int) string {
@@ -310,33 +373,59 @@ func (m *model) renderKanban(w, h int) string {
 		return "No items match."
 	}
 	cw := m.colWidth()
-	// visible columns: fit full columns; collapsed are 15 wide
-	// Compute window starting at colOffset ensuring focused visible.
-	m.ensureColVisible(w, cw)
-	// Build visible slice
 	type visCol struct {
 		idx   int
 		col   column
 		width int
 	}
 	var vis []visCol
-	used := 0
-	for i := m.colOffset; i < len(cols); i++ {
-		cwid := cw
-		if cols[i].collapsed {
-			cwid = 15
+	if widths, ok := fluidWidths(w, cols, cw); ok {
+		// Every column fits (stretched or shrunk): no scrolling (A3).
+		m.colOffset = 0
+		for i, c := range cols {
+			vis = append(vis, visCol{i, c, widths[i]})
 		}
-		if used > 0 && used+1+cwid > w {
-			break
+	} else {
+		// Scrolling window at the preferred width, stretched to fill.
+		m.ensureColVisible(w, cw)
+		var sel []column
+		var selIdx []int
+		used := 0
+		for i := m.colOffset; i < len(cols); i++ {
+			cwid := cw
+			if cols[i].collapsed {
+				cwid = collapsedWidth
+			}
+			if used > 0 && used+1+cwid > w {
+				break
+			}
+			if used == 0 && cwid > w {
+				cwid = w
+			}
+			sel = append(sel, cols[i])
+			selIdx = append(selIdx, i)
+			used += cwid + 1
 		}
-		if used == 0 && cwid > w {
-			cwid = w
+		if len(sel) == 0 {
+			sel = []column{cols[m.colOffset]}
+			selIdx = []int{m.colOffset}
 		}
-		vis = append(vis, visCol{i, cols[i], cwid})
-		used += cwid + 1
-	}
-	if len(vis) == 0 {
-		vis = append(vis, visCol{m.colOffset, cols[m.colOffset], w})
+		widths, ok := fluidWidths(w, sel, cw)
+		if !ok {
+			widths = make([]int, len(sel))
+			for i, c := range sel {
+				widths[i] = cw
+				if c.collapsed {
+					widths[i] = collapsedWidth
+				}
+			}
+			if len(widths) == 1 && widths[0] > w {
+				widths[0] = w
+			}
+		}
+		for j, c := range sel {
+			vis = append(vis, visCol{selIdx[j], c, widths[j]})
+		}
 	}
 	// Header row
 	var headerParts []string
@@ -507,6 +596,10 @@ func (m *model) comfortableCard(it githubx.Item, width int, focused bool) string
 	kindRef := string(it.Kind) + " " + it.Ref()
 	if it.Kind == githubx.KindDraft {
 		kindRef = it.Ref()
+	} else if lipgloss.Width("  "+kindRef) > inner {
+		// Shrunk column (A3): shorten like compact cards (A2); the
+		// full reference stays in detail, list view, and on copy.
+		kindRef = fmt.Sprintf("%s …#%d", it.Kind, it.Number)
 	}
 	line2 := "  " + truncateRunes(kindRef, inner-2)
 	meta := assigneeOf(it)

@@ -1,18 +1,18 @@
 [1mBoardwalk · SnazzyEmail (fixture) (fixture-user/1) · Grouped by Status · 14 items[m                updated 4m ago · ? Help
-[1mBacklog (4)[m                          [1mReady (1)[m                            [1mIn progress (1)[m                      2 cols ▸
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭──────────────────────────────────╮ ╭──────────────────────────────────╮
-┃ ▸Fixture issue item 04           ┃ │  Fixture issue item 01           │ │  Fixture issue item 02           │
-┃   issue fixture/repo#8           ┃ │   issue fixture/repo#32          │ │   issue fixture/repo#27          │
-┃                                  ┃ │                                  │ │                                  │
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰──────────────────────────────────╯ ╰──────────────────────────────────╯
-╭──────────────────────────────────╮                                                                          
-│  Fixture issue item 05           │                                                                          
-│   issue fixture/repo#12          │                                                                          
-│                                  │                                                                          
-╰──────────────────────────────────╯                                                                          
-╭──────────────────────────────────╮                                                                          
-│  Fixture issue item 06           │                                                                          
-│   issue fixture/repo#18          │                                                                          
+[1mBacklog (4)[m                              [1mReady (1)[m                               [1mIn progress (1)[m                        
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─────────────────────────────────────╮ ╭─────────────────────────────────────╮
+┃ ▸Fixture issue item 04               ┃ │  Fixture issue item 01              │ │  Fixture issue item 02              │
+┃   issue fixture/repo#8               ┃ │   issue fixture/repo#32             │ │   issue fixture/repo#27             │
+┃                                      ┃ │                                     │ │                                     │
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰─────────────────────────────────────╯ ╰─────────────────────────────────────╯
+╭──────────────────────────────────────╮                                                                                
+│  Fixture issue item 05               │                                                                                
+│   issue fixture/repo#12              │                                                                                
+│                                      │                                                                                
+╰──────────────────────────────────────╯                                                                                
+╭──────────────────────────────────────╮                                                                                
+│  Fixture issue item 06               │                                                                                
+│   issue fixture/repo#18              │                                                                                
 ╭─ Group by ───────────────────────────────╮
 │ ▸ Status                                 │
 │     Backlog: This item hasn't been star… │
@@ -23,18 +23,18 @@
 │   Priority                               │
 │   Size                                   │
 ╰──────────────────────────────────────────╯
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
-                                                                                                              
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
 ↑↓ pick grouping · Enter apply · Esc cancel

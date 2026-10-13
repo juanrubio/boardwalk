@@ -1,25 +1,25 @@
 [1mBoardwalk · SnazzyEmail (fixture) (fixture-user/1) · Grouped by Status · 14 items[m                updated 4m ago · ? Help
-[1mBacklog (4)[m                          4 cols ▸                          │[1mReview changes — fixture/repo#8[m
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                   │─────────────────────────────────────────────
-┃ ▸Fixture issue item 04           ┃                                   │Applied (GitHub confirmed):
-┃   issue fixture/repo#8           ┃                                   │  ✓ Status: Ready → In Progress
-┃                                  ┃                                   │
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                   │Failed (nothing else was changed):
-╭──────────────────────────────────╮                                   │  ✗ Estimate: 3 → 5
-│  Fixture issue item 05           │                                   │    GitHub rejected the request (FORBIDDEN)
-│   issue fixture/repo#12          │                                   │
-│                                  │                                   │Enter retry failed changes only
-╰──────────────────────────────────╯                                   │e      back to the form (edits kept)
-╭──────────────────────────────────╮                                   │Esc    back (asks before discarding)
-│  Fixture issue item 06           │                                   │
-│   issue fixture/repo#18          │                                   │
-│                                  │                                   │
-╰──────────────────────────────────╯                                   │
-╭──────────────────────────────────╮                                   │
-│  Fixture issue item 13           │                                   │
-│   issue fixture/repo#39          │                                   │
-│                                  │                                   │
-╰──────────────────────────────────╯                                   │
+[1mBacklog (4)[m                                              4 cols ▸      │[1mReview changes — fixture/repo#8[m
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓               │─────────────────────────────────────────────
+┃ ▸Fixture issue item 04                               ┃               │Applied (GitHub confirmed):
+┃   issue fixture/repo#8                               ┃               │  ✓ Status: Ready → In Progress
+┃                                                      ┃               │
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛               │Failed (nothing else was changed):
+╭──────────────────────────────────────────────────────╮               │  ✗ Estimate: 3 → 5
+│  Fixture issue item 05                               │               │    GitHub rejected the request (FORBIDDEN)
+│   issue fixture/repo#12                              │               │
+│                                                      │               │Enter retry failed changes only
+╰──────────────────────────────────────────────────────╯               │e      back to the form (edits kept)
+╭──────────────────────────────────────────────────────╮               │Esc    back (asks before discarding)
+│  Fixture issue item 06                               │               │
+│   issue fixture/repo#18                              │               │
+│                                                      │               │
+╰──────────────────────────────────────────────────────╯               │
+╭──────────────────────────────────────────────────────╮               │
+│  Fixture issue item 13                               │               │
+│   issue fixture/repo#39                              │               │
+│                                                      │               │
+╰──────────────────────────────────────────────────────╯               │
                                                                        │
                                                                        │
                                                                        │
