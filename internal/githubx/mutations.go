@@ -333,6 +333,25 @@ mutation BoardwalkArchive($project: ID!, $item: ID!) {
   }
 }`
 
+const deleteMutation = `
+mutation BoardwalkDelete($project: ID!, $item: ID!) {
+  deleteProjectV2Item(input: {projectId: $project, itemId: $item}) {
+    deletedItemId
+  }
+}`
+
+func (c *gqlClient) DeleteItem(ctx context.Context, projectID, itemID string) error {
+	if err := c.CheckAuth(ctx); err != nil {
+		return err
+	}
+	var resp struct {
+		DeleteProjectV2Item struct {
+			DeletedItemID string
+		}
+	}
+	return c.do(ctx, deleteMutation, map[string]interface{}{"project": projectID, "item": itemID}, &resp)
+}
+
 func (c *gqlClient) ArchiveItem(ctx context.Context, projectID, itemID string) error {
 	if err := c.CheckAuth(ctx); err != nil {
 		return err

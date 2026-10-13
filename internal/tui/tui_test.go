@@ -279,3 +279,55 @@ func TestFilterMatches(t *testing.T) {
 		t.Fatalf("filter all=%d got=%d", len(all), len(got))
 	}
 }
+
+func TestDeleteTwoStageModal(t *testing.T) {
+	m, fc := testModel(t, "fixture-user/1")
+	it, ok := m.focusedItem()
+	if !ok {
+		t.Fatal("no focus")
+	}
+	m = send(m, "D")
+	if m.overlay != overlayDelete || m.deleteStage != 0 {
+		t.Fatalf("D should open delete modal stage 0, got overlay=%v stage=%d", m.overlay, m.deleteStage)
+	}
+	if v := m.View().Content; !strings.Contains(v, "cannot be undone") {
+		t.Fatalf("delete modal missing warning:\n%s", v)
+	}
+	// First y only arms; the fixture item must still exist.
+	m = send(m, "y")
+	if m.deleteStage != 1 {
+		t.Fatalf("first y should arm stage 1, got %d", m.deleteStage)
+	}
+	if fc.Board("fixture-user/1") == nil {
+		t.Fatal("board gone")
+	}
+	found := false
+	for _, bi := range fc.Board("fixture-user/1").Items {
+		if bi.ID == it.ID {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("item deleted after only one y — double confirmation broken")
+	}
+	// Second y executes.
+	mm, cmd := m.Update(key("y"))
+	m = mm.(*model)
+	if cmd == nil {
+		t.Fatal("second y returned no delete command")
+	}
+	mm, _ = m.Update(cmd())
+	m = mm.(*model)
+	found = false
+	for _, bi := range fc.Board("fixture-user/1").Items {
+		if bi.ID == it.ID {
+			found = true
+		}
+	}
+	if found {
+		t.Fatal("item not deleted after two y presses")
+	}
+	if _, ok := m.focusedItem(); !ok {
+		t.Fatal("no focus after delete")
+	}
+}

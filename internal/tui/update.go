@@ -86,6 +86,20 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.clampFocus()
 		m.footer = "Archived."
 		return m, nil
+	case deleteResultMsg:
+		m.overlay = overlayNone
+		m.deleteStage = 0
+		if msg.err != nil {
+			m.footer = "Delete failed: " + msg.err.Error()
+			return m, nil
+		}
+		if it, ok := m.focusedItem(); ok {
+			m.removeItem(it.ID)
+		}
+		m.pane = paneNone
+		m.clampFocus()
+		m.footer = "Deleted."
+		return m, nil
 	case draftResultMsg:
 		if msg.err != nil {
 			m.footer = "Create failed: " + msg.err.Error()

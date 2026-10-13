@@ -82,6 +82,7 @@ func TestGoldenFrames(t *testing.T) {
 			m.snapAt = time.Now().Add(-4 * time.Minute)
 		}},
 		{"archive-80x24", 80, 24, func(m *model) { m.overlay = overlayArchive }},
+		{"delete-stage2-80x24", 80, 24, func(m *model) { m.overlay = overlayDelete; m.deleteStage = 1 }},
 		{"group-picker-120x40", 120, 40, func(m *model) { m.overlay = overlayGroup }},
 		{"too-small-50x12", 50, 12, nil},
 		{"new-draft-120x40", 120, 40, func(m *model) { m.startNewDraft() }},

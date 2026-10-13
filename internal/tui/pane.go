@@ -233,6 +233,7 @@ func (m *model) renderHelp(w int) string {
 		"/ filter       g grouping    v list/board",
 		"z collapse     d density     r refresh",
 		"o browser      y/Y copy      u undo move",
+		"D delete       x archive",
 		"? this help    q quit        Esc back",
 	}
 	var b strings.Builder
@@ -260,6 +261,43 @@ func (m *model) renderArchiveModal(w int) string {
 		"stays open on GitHub.",
 		"",
 		"[y] Archive    [any key] Cancel",
+	}
+	var b strings.Builder
+	b.WriteString("╭" + strings.Repeat("─", boxW-2) + "╮\n")
+	for _, l := range lines {
+		b.WriteString("│ " + padRight(truncateRunes(l, boxW-4), boxW-4) + " │\n")
+	}
+	b.WriteString("╰" + strings.Repeat("─", boxW-2) + "╯")
+	return b.String()
+}
+
+func (m *model) renderDeleteModal(w int) string {
+	it, ok := m.focusedItem()
+	ref, kind, title := "", "", ""
+	if ok {
+		ref, kind, title = it.Ref(), string(it.Kind), it.Title
+	}
+	consequence := "The issue itself stays open on GitHub."
+	if kind == "draft" {
+		consequence = "This draft's content will be permanently gone."
+	}
+	stage := "Delete permanently?"
+	if m.deleteStage == 1 {
+		stage = "Confirm again — this cannot be undone"
+	}
+	boxW := min(w-4, 46)
+	lines := []string{
+		"─ " + stage + " " + strings.Repeat("─", 8),
+		ref,
+		fmt.Sprintf("%s · %s", kind, title),
+		"",
+		"This cannot be undone.",
+		consequence,
+		"",
+		"[y] Delete    [any key] Cancel",
+	}
+	if m.deleteStage == 1 {
+		lines[len(lines)-1] = "[y] Yes, delete permanently    [any key] Cancel"
 	}
 	var b strings.Builder
 	b.WriteString("╭" + strings.Repeat("─", boxW-2) + "╮\n")

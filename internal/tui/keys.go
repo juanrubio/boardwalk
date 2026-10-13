@@ -53,6 +53,17 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 		m.overlay = overlayNone
 		return m, nil
+	case overlayDelete:
+		if s == "y" && m.deleteStage == 0 {
+			m.deleteStage = 1
+			return m, nil
+		}
+		if s == "y" && m.deleteStage == 1 {
+			return m, m.deleteCmd()
+		}
+		m.overlay = overlayNone
+		m.deleteStage = 0
+		return m, nil
 	case overlayDiscard, overlayQuitDirty:
 		if s == "y" {
 			if m.overlay == overlayQuitDirty {
@@ -173,6 +184,12 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "x":
 		if _, ok := m.focusedItem(); ok {
 			m.overlay = overlayArchive
+		}
+		return m, nil
+	case "D":
+		if _, ok := m.focusedItem(); ok {
+			m.overlay = overlayDelete
+			m.deleteStage = 0
 		}
 		return m, nil
 	case "o":
@@ -385,6 +402,20 @@ func (m *model) loadDetailCmd(itemID string) tea.Cmd {
 		}
 		body := renderBody(it.Body, 44)
 		return detailMsg{item: it, body: body}
+	}
+}
+
+func (m *model) deleteCmd() tea.Cmd {
+	it, ok := m.focusedItem()
+	if !ok {
+		return nil
+	}
+	svc, proj := m.svc, m.project
+	return func() tea.Msg {
+		if svc == nil || svc.Client == nil {
+			return deleteResultMsg{err: fmt.Errorf("no GitHub client configured")}
+		}
+		return deleteResultMsg{err: svc.Client.DeleteItem(m.ctx, proj.ID, it.ID)}
 	}
 }
 

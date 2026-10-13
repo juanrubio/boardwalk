@@ -365,6 +365,50 @@ func printCreated(opts *Options, it githubx.Item, project githubx.Project) error
 	return nil
 }
 
+// deleteConfirmGate is confirmGate twice (ADR 0012 double
+// confirmation). Dry-run, --yes, and piped refusal behave as in
+// confirmGate; an interactive user must affirm twice in succession.
+func deleteConfirmGate(opts *Options, summary []string) (bool, error) {
+	proceed, err := confirmGate(opts, summary)
+	if err != nil || !proceed {
+		return proceed, err
+	}
+	if opts.Yes || opts.DryRun {
+		return proceed, nil
+	}
+	second := append([]string{"Confirm again: this deletion cannot be undone."}, summary...)
+	return confirmGate(opts, second)
+}
+
+func runItemDelete(ctx context.Context, opts *Options, ref string) error {
+	svc, project, board, err := loadBoardFor(ctx, opts)
+	if err != nil {
+		return err
+	}
+	it, err := core.ResolveItemRef(board, ref)
+	if err != nil {
+		return err
+	}
+	consequence := "the issue/PR itself stays open on GitHub"
+	if it.Kind == githubx.KindDraft {
+		consequence = "this draft's content will be permanently gone"
+	}
+	summary := []string{fmt.Sprintf("Permanently delete %s (%s) %q — this cannot be undone; %s", it.Ref(), it.Kind, it.Title, consequence)}
+	proceed, err := deleteConfirmGate(opts, summary)
+	if err != nil || !proceed {
+		return err
+	}
+	if err := svc.Client.DeleteItem(ctx, project.ID, it.ID); err != nil {
+		return err
+	}
+	if opts.JSON {
+		enc := json.NewEncoder(opts.Out)
+		return enc.Encode(map[string]any{"ref": it.Ref(), "deleted": true})
+	}
+	_, _ = fmt.Fprintf(opts.Out, "✓ Deleted %s\n", it.Ref())
+	return nil
+}
+
 func runItemArchive(ctx context.Context, opts *Options, ref string) error {
 	svc, project, board, err := loadBoardFor(ctx, opts)
 	if err != nil {

@@ -54,6 +54,7 @@ func newItemCmd(opts *Options) *cobra.Command {
 	cmd.AddCommand(newItemEditCmd(opts))
 	cmd.AddCommand(newItemMoveCmd(opts))
 	cmd.AddCommand(newItemArchiveCmd(opts))
+	cmd.AddCommand(newItemDeleteCmd(opts))
 	return cmd
 }
 
@@ -154,6 +155,19 @@ func newItemArchiveCmd(opts *Options) *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runItemArchive(cmd.Context(), opts, args[0])
+		},
+	}
+}
+
+func newItemDeleteCmd(opts *Options) *cobra.Command {
+	return &cobra.Command{
+		Use:   "delete <ref>",
+		Short: "Permanently delete an item (cannot be undone; see also archive)",
+		Example: `  boardwalk item delete juanrubio/snazzyemail#42
+  boardwalk item delete draft:91204910 --dry-run`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runItemDelete(cmd.Context(), opts, args[0])
 		},
 	}
 }

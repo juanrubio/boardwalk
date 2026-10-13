@@ -80,3 +80,42 @@ func TestAddDraftAndArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestDeletePipedWithoutYesRefuses(t *testing.T) {
+	opts, _ := fixtureOptions(t, false)
+	err := runCmd(t, opts, "item", "delete", "fixture/repo#32")
+	if err == nil {
+		t.Fatal("expected refusal error")
+	}
+	if exiterr.CodeOf(err) != exiterr.CodeUsage {
+		t.Fatalf("code = %d, want 2 (%v)", exiterr.CodeOf(err), err)
+	}
+}
+
+func TestDeleteDryRunChangesNothing(t *testing.T) {
+	opts, buf := fixtureOptions(t, false)
+	if err := runCmd(t, opts, "item", "delete", "fixture/repo#32", "--dry-run"); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "Dry run") || !strings.Contains(buf.String(), "cannot be undone") {
+		t.Fatalf("expected dry-run deletion plan, got:\n%s", buf.String())
+	}
+}
+
+func TestDeleteWithYesDeletes(t *testing.T) {
+	opts, buf := fixtureOptions(t, false)
+	if err := runCmd(t, opts, "item", "delete", "fixture/repo#32", "--yes"); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "Deleted fixture/repo#32") {
+		t.Fatalf("expected deleted line, got:\n%s", buf.String())
+	}
+	// Gone from the board now: resolving it reports not found (exit 4).
+	err := runCmd(t, opts, "item", "move", "fixture/repo#32", "--to", "Done", "--yes")
+	if err == nil {
+		t.Fatal("expected not-found error for deleted item")
+	}
+	if exiterr.CodeOf(err) != exiterr.CodeNotFound {
+		t.Fatalf("code = %d, want 4 (%v)", exiterr.CodeOf(err), err)
+	}
+}

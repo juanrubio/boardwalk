@@ -66,6 +66,8 @@ func (m *model) viewMain(w, h int) string {
 		body = overlayCenter(body, m.renderHelp(w), bodyH)
 	case overlayArchive:
 		body = overlayCenter(body, m.renderArchiveModal(w), bodyH)
+	case overlayDelete:
+		body = overlayCenter(body, m.renderDeleteModal(w), bodyH)
 	case overlayGroup:
 		body = overlayCenter(body, m.renderGroupPicker(w), bodyH)
 	}
@@ -186,6 +188,11 @@ func (m *model) footerHint() string {
 		return "? close help · Esc back"
 	case overlayArchive:
 		return "y archive (not optimistic) · any other key cancels"
+	case overlayDelete:
+		if m.deleteStage == 1 {
+			return "y again to permanently delete · any other key cancels"
+		}
+		return "y confirm deletion · any other key cancels"
 	case overlayGroup:
 		return "↑↓ pick grouping · Enter apply · Esc cancel"
 	case overlaySearch:

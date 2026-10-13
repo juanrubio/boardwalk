@@ -26,6 +26,7 @@ const (
 	overlayNone overlayKind = iota
 	overlayHelp
 	overlayArchive
+	overlayDelete
 	overlayGroup
 	overlaySearch
 	overlayAdd
@@ -109,6 +110,7 @@ type model struct {
 	addText        string
 	addPreview     string
 	savingMsg      string
+	deleteStage    int
 	detailScroll   int
 	refreshFocusID string
 }
@@ -138,6 +140,7 @@ type detailMsg struct {
 type (
 	saveResultMsg    struct{ results []core.Result }
 	archiveResultMsg struct{ err error }
+	deleteResultMsg  struct{ err error }
 	draftResultMsg   struct {
 		item githubx.Item
 		err  error

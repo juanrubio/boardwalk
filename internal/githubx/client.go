@@ -52,6 +52,10 @@ type Client interface {
 
 	// ArchiveItem archives a project item.
 	ArchiveItem(ctx context.Context, projectID, itemID string) error
+
+	// DeleteItem permanently deletes a project item (ADR 0012). A
+	// linked issue/PR is untouched; a draft's content is gone.
+	DeleteItem(ctx context.Context, projectID, itemID string) error
 }
 
 // FieldAssign is one named field assignment in a batch save.

@@ -4,7 +4,6 @@
 ┃ ▸Fixture issue item 04           ┃ │  Fixture issue item 01           │
 ┃   issue fixture/repo#8           ┃ │   issue fixture/repo#32          │
 ┃                                  ┃ │                                  │
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰──────────────────────────────────╯
 ╭──────────────────────────────────────────────╮
 │ ─ Keys ───────────────────────────────────── │
 │ ↑↓/jk card     ←→/hl column  H/L move        │
@@ -13,6 +12,7 @@
 │ / filter       g grouping    v list/board    │
 │ z collapse     d density     r refresh       │
 │ o browser      y/Y copy      u undo move     │
+│ D delete       x archive                     │
 │ ? this help    q quit        Esc back        │
 ╰──────────────────────────────────────────────╯
 ╭──────────────────────────────────╮                                     

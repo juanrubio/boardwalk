@@ -320,6 +320,22 @@ func (c *Client) UpdateTitleBody(_ context.Context, item githubx.Item, title, bo
 	return *it, nil
 }
 
+func (c *Client) DeleteItem(_ context.Context, projectID, itemID string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	b := c.boardByID(projectID)
+	if b == nil {
+		return exiterr.NotFoundf("no fixture project id %q", projectID)
+	}
+	for i := range b.Items {
+		if b.Items[i].ID == itemID {
+			b.Items = append(b.Items[:i], b.Items[i+1:]...)
+			return nil
+		}
+	}
+	return exiterr.NotFoundf("no fixture item %q", itemID)
+}
+
 func (c *Client) ArchiveItem(_ context.Context, _, itemID string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
