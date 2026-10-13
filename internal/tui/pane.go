@@ -115,6 +115,14 @@ func (m *model) modalBox(content string, mw, mh int) string {
 		Padding(0, 1).
 		Width(mw).
 		MaxHeight(mh)
+	if !m.theme.Mono {
+		// An explicit background makes every cell of the panel —
+		// padding included — a styled cell the renderer must write.
+		// Without it, some terminals (Kitty) lose short trailing
+		// padding runs after styled segments and the right border
+		// lands early.
+		style = style.Background(m.theme.Tokens.SelectionBG)
+	}
 	return style.Render(content)
 }
 

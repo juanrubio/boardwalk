@@ -63,20 +63,20 @@ func (m *model) viewMain(w, h int) string {
 	body = m.renderBoardArea(w, bodyH)
 	// Editor and its change summary are centred modals (A4).
 	if m.overlay == overlayNone && (m.pane == paneEdit || m.pane == paneNewDraft) {
-		body = overlayCenter(body, m.renderFormModal(), w, bodyH)
+		body = m.overlayCenter(body, m.renderFormModal(), w, bodyH)
 	}
 	if m.overlay == overlayNone && m.pane == paneSummary {
-		body = overlayCenter(body, m.renderSummaryModal(), w, bodyH)
+		body = m.overlayCenter(body, m.renderSummaryModal(), w, bodyH)
 	}
 	switch m.overlay {
 	case overlayHelp:
-		body = overlayCenter(body, m.renderHelp(w), w, bodyH)
+		body = m.overlayCenter(body, m.renderHelp(w), w, bodyH)
 	case overlayArchive:
-		body = overlayCenter(body, m.renderArchiveModal(w), w, bodyH)
+		body = m.overlayCenter(body, m.renderArchiveModal(w), w, bodyH)
 	case overlayDelete:
-		body = overlayCenter(body, m.renderDeleteModal(w), w, bodyH)
+		body = m.overlayCenter(body, m.renderDeleteModal(w), w, bodyH)
 	case overlayGroup:
-		body = overlayCenter(body, m.renderGroupPicker(w), w, bodyH)
+		body = m.overlayCenter(body, m.renderGroupPicker(w), w, bodyH)
 	}
 	// Overlay prompts (search/add) replace header line 2 handling via footer/header
 	lines := []string{header}
@@ -102,7 +102,7 @@ func splitLines(s string, n int) []string {
 }
 
 // overlayCenter draws box over body lines (simple replacement of middle lines).
-func overlayCenter(body, box string, w, h int) string {
+func (m *model) overlayCenter(body, box string, w, h int) string {
 	lines := splitLines(body, h)
 	boxLines := strings.Split(box, "\n")
 	boxW := 0
@@ -113,6 +113,12 @@ func overlayCenter(body, box string, w, h int) string {
 	}
 	left := max(0, (w-boxW)/2)
 	pad := strings.Repeat(" ", left)
+	if !m.theme.Mono {
+		bg := lipgloss.NewStyle().Background(m.theme.Tokens.SelectionBG)
+		for i, bl := range boxLines {
+			boxLines[i] = bg.Render(bl)
+		}
+	}
 	start := max(0, (h-len(boxLines))/2)
 	for i, bl := range boxLines {
 		if start+i < len(lines) {

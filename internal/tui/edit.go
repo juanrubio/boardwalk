@@ -231,7 +231,7 @@ func (m *model) syncFormLayout() {
 		ff := &m.form.fields[i]
 		switch ff.kind {
 		case "body":
-			ff.area.SetWidth(max(10, mw-10))
+			ff.area.SetWidth(max(10, mw-6)) // indent (2) + area = inner width: zero trailing padding
 			ff.area.SetHeight(bodyH)
 		case "title", "date", "number", "text":
 			ff.input.SetWidth(inputW)
