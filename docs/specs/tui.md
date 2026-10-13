@@ -235,6 +235,13 @@ recorded in [mockups.md](mockups.md).
   inside the card, so the spike starts from 36, not 26. When more columns exist than
   fit, the board scrolls horizontally and the focused column is always
   fully visible. Column bodies scroll vertically and independently.
+  *(A3, owner decision)* **Fluid column widths.** 36 cells (31 in
+  compact density) is the *minimum*, not a fixed width: the columns
+  on screen share the full board width evenly, stretching up to a
+  56-cell cap so titles and references truncate less on wide
+  terminals. Past the cap the board stops growing (very wide cards
+  scan badly); any remainder stays empty at the right. Collapsed
+  columns stay 15 cells and do not share in the stretch.
 - *(A1)* **Off-screen hints.** Hidden columns are shown at the board
   edges as `◂ 2` / `3 ▸` (the number of columns off-screen). A column
   with cards below the fold ends with `↓ 12 more`. Nothing off-screen is
