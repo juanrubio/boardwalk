@@ -145,6 +145,7 @@ neighbours (performance.md §2), so the pane stays responsive.
 | `n` | New draft item (see §4) |
 | `a` | *(A1)* Add an existing issue/PR by reference (see §4) |
 | `x` | *(A1)* Archive the focused item, after explicit confirmation (ADR 0006) |
+| `D` | *(ADR 0012)* Permanently delete the focused item, after double confirmation |
 | `o` | *(A1)* Open the focused item on GitHub in the browser |
 | `y` | *(A1)* Copy the focused item's reference (cli.md §1); `Y` copies its URL |
 | `g` | Grouping-field picker (§1) |
@@ -158,6 +159,12 @@ kind, title). It is applied only when the user presses `y` at that
 prompt. Any other key cancels. Archive is not optimistic: the card stays
 until GitHub confirms, then it is removed and focus moves to the nearest
 neighbour.
+
+*(ADR 0012)* **Delete** uses the same modal in two stages: the first `y`
+arms the deletion, and only a second successive `y` executes it. Both
+stages name the item and state that deletion cannot be undone, that a
+linked issue/PR is untouched, and that a draft's content is permanently
+gone. Any other key at either stage cancels. Delete is not optimistic.
 
 *(A1)* **Clipboard** uses OSC 52 where the terminal supports it, and the
 system clipboard otherwise. If neither works, the footer shows the
