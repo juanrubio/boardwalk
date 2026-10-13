@@ -14,6 +14,44 @@ import (
 	"github.com/juanrubio/gh-boardwalk/internal/theme"
 )
 
+// TestProgramEnvKittyREP pins the Kitty compatibility rewrite: early
+// Kitty builds (0.16) ignore CSI b (REP), which ultraviolet enables
+// from TERM=xterm-kitty alone; every REP-compressed padding run then
+// vanishes and card/modal borders shift left. The program environment
+// must present xterm-256color for Kitty TERM values (ECH still works
+// there) and leave every other terminal untouched.
+func TestProgramEnvKittyREP(t *testing.T) {
+	cases := []struct {
+		name  string
+		env   []string
+		want  []string
+		kitty bool
+	}{
+		{"kitty", []string{"TERM=xterm-kitty", "HOME=/x"}, []string{"TERM=xterm-256color", "HOME=/x"}, true},
+		{"kitty 256color", []string{"TERM=xterm-kitty-256color"}, []string{"TERM=xterm-256color"}, true},
+		{"tmux", []string{"TERM=screen-256color"}, []string{"TERM=screen-256color"}, false},
+		{"xterm", []string{"TERM=xterm-256color"}, []string{"TERM=xterm-256color"}, false},
+		{"no term", []string{"HOME=/x"}, []string{"HOME=/x"}, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, kitty := programEnv(tc.env)
+			if kitty != tc.kitty {
+				t.Fatalf("kitty = %v, want %v", kitty, tc.kitty)
+			}
+			if strings.Join(got, "\n") != strings.Join(tc.want, "\n") {
+				t.Fatalf("env = %v, want %v", got, tc.want)
+			}
+		})
+	}
+	// The caller's slice must not be mutated.
+	env := []string{"TERM=xterm-kitty"}
+	programEnv(env)
+	if env[0] != "TERM=xterm-kitty" {
+		t.Fatalf("input env mutated: %v", env)
+	}
+}
+
 func testModel(t *testing.T, ref string) (*model, *fixture.Client) {
 	t.Helper()
 	fc, err := fixture.LoadDir("../../testdata/fixtures")

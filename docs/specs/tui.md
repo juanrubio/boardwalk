@@ -337,6 +337,12 @@ style, never a card's size.
   text markers (for example `●`, `○`, `▸`) that survive any terminal.
 - Motion is functional only (loading spinner, optimistic-move
   feedback); there is no decorative animation.
+- **Renderer compatibility:** early Kitty builds (0.16) do not
+  implement CSI b (REP), which the Bubble Tea v2 renderer enables
+  from `TERM=xterm-kitty` alone; dropped REP runs shift card and
+  modal borders left. On Kitty the program therefore presents
+  `TERM=xterm-256color` to the renderer (ECH erasure instead of
+  REP) and pins the truecolour profile Kitty would have reported.
 
 ### Visual language *(A1)*
 
