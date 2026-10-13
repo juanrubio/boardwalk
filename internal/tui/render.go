@@ -446,6 +446,9 @@ func (m *model) renderColumn(col column, width, bodyH int, focusedCol bool) []st
 	for i := start; i < len(col.items) && idx < per; i++ {
 		card := m.comfortableCard(col.items[i], width, focusedCol && i == m.row)
 		cl := strings.Split(card, "\n")
+		if len(cl) > 5 { // fixed card geometry (mockups.md): never taller
+			cl = cl[:5]
+		}
 		for j, l := range cl {
 			if idx*5+j < bodyH {
 				lines[idx*5+j] = l
@@ -517,7 +520,9 @@ func (m *model) comfortableCard(it githubx.Item, width int, focused bool) string
 	if focused {
 		style = m.theme.CardFocused
 	}
-	return style.Width(width - 2).Render(content)
+	// Lip Gloss Width is the total card width (border+padding+text),
+	// so text area is width-4, matching inner above.
+	return style.Width(width).Render(content)
 }
 
 func (m *model) compactCardLines(it githubx.Item, width int, focused bool) (string, string) {

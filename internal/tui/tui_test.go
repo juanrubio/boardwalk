@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/juanrubio/gh-boardwalk/internal/config"
 	"github.com/juanrubio/gh-boardwalk/internal/core"
@@ -242,6 +243,30 @@ func TestNoSingleSelectForcesList(t *testing.T) {
 	m.rebuildFocus()
 	if !m.forceList || m.view != viewList {
 		t.Fatalf("expected forced list, force=%v view=%v", m.forceList, m.view)
+	}
+}
+
+// Regression: wide (emoji) titles and long references must not wrap
+// a comfortable card past its fixed 5-line, 36-cell geometry.
+func TestCardGeometryWideTitle(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	it := githubx.Item{
+		ID: "X", Kind: githubx.KindIssue,
+		Title: "💰 Add annual billing option ($15/month per seat)",
+		Repo:  "juanrubio/snazzyemail", Number: 8,
+	}
+	card := m.comfortableCard(it, 36, true)
+	lines := strings.Split(card, "\n")
+	if len(lines) != 5 {
+		t.Fatalf("card has %d lines, want 5:\n%s", len(lines), card)
+	}
+	for i, l := range lines {
+		if w := lipgloss.Width(l); w != 36 {
+			t.Errorf("line %d width %d, want 36: %q", i, w, l)
+		}
+	}
+	if !strings.Contains(card, "juanrubio/snazzyemail#8") {
+		t.Errorf("full reference must fit on one line:\n%s", card)
 	}
 }
 

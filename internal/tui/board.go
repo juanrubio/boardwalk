@@ -5,6 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
+
 	"github.com/juanrubio/gh-boardwalk/internal/core"
 	"github.com/juanrubio/gh-boardwalk/internal/githubx"
 )
@@ -161,7 +164,7 @@ func assigneeOf(it githubx.Item) string {
 func metaPairs(it githubx.Item, groupName string) []string {
 	var out []string
 	for _, v := range it.Values {
-		if v.FieldName == groupName || len(v.Users) > 0 {
+		if v.FieldName == groupName || len(v.Users) > 0 || v.DataType == "TITLE" {
 			continue
 		}
 		d := core.DisplayValue(v)
@@ -219,22 +222,23 @@ func relAgo(t time.Time) string {
 	}
 }
 
+// truncateRunes truncates to a display-cell width (not rune count),
+// so wide characters (emoji, CJK) cannot wrap a fixed-geometry card.
 func truncateRunes(s string, n int) string {
 	if n <= 0 {
 		return ""
 	}
-	r := []rune(s)
-	if len(r) <= n {
+	if lipgloss.Width(s) <= n {
 		return s
 	}
 	if n == 1 {
 		return "…"
 	}
-	return string(r[:n-1]) + "…"
+	return ansi.Truncate(s, n, "…")
 }
 
 func padRight(s string, w int) string {
-	n := len([]rune(s))
+	n := lipgloss.Width(s)
 	if n >= w {
 		return truncateRunes(s, w)
 	}
