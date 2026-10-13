@@ -265,6 +265,8 @@ Boardwalk · snazzy (juanrubio/1) · List · Grouped by Status · 14 items      
 
 *State:* `e` on the focused card. Three fields changed; nothing has been sent yet (tui.md §4).
 
+*(A4: this frame shows the original pane layout. The form now opens as a centred modal of similar content — fields, dirty markers, and the same footer keys — with a visible cursor in the focused field and a taller body area. Field order and semantics are unchanged.)*
+
 ```text
 Boardwalk · snazzy (juanrubio/1) · Edit item                                              updated 4m ago · ? Help       
   In Progress (3)                     In Review (2)                      │ Edit — Export to CSV crash  (3 changes)      

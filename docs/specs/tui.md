@@ -389,6 +389,17 @@ move is one field, applied instantly and optimistically, with no
 confirmation step. Everything else follows the rules below, honouring
 the PRD's preview/pending-changes contract (§3, §8 flow C).
 
+*(A4, owner feedback)* **The edit form and its change summary open as a
+centred modal** over the board (same overlay pattern as help/archive),
+sized generously — up to roughly 110×34 cells — so the body field has
+real writing room. The detail *reading* pane stays a split pane (§3);
+only editing moved. Text fields are real text inputs: a **visible
+blinking cursor** is always shown in the focused field, `←`/`→` and
+Home/End move within the text, the body area also moves by lines with
+`↑`/`↓`, and `Tab`/`Shift-Tab` switch fields (`↑`/`↓` also switch
+fields from single-line inputs). `Ctrl-E` ($EDITOR) remains the
+escape hatch for long bodies.
+
 ### Editing an existing item
 
 - `e` (§2) switches the detail pane to edit mode. Fields are visited
@@ -675,6 +686,10 @@ build starts. The results are recorded as an amendment.
   - [mockups.md](mockups.md) redrawn at true cell geometry with the
     list-view, edit-form, help/search, archive-modal, too-small, and
     monochrome states added.
+- **A4 (2026-10-13)** — owner feedback on the editor: §4 forms and
+  change summaries become a centred, generously sized modal with real
+  text inputs (visible blinking cursor, cursor keys); Ctrl-E editor
+  handoff praised and kept. Detail reading stays a split pane.
 - **A3 (2026-10-13)** — owner decision after screenshot review:
   - §3: fluid column widths — stretch to a 56-cell cap above the
     preferred 36/31-cell widths, shrink-to-fit down to a 30/26-cell
