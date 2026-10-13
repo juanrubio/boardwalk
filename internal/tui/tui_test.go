@@ -384,3 +384,33 @@ func TestBoardFitsAllColumnsAt180(t *testing.T) {
 		t.Fatalf("no off-screen hint expected when everything fits:\n%s", v)
 	}
 }
+
+// Regression (owner screenshot): a bare emoji codepoint (U+1F5A5, no
+// variation selector) is counted as 1 cell by wcwidth measurers but
+// drawn 2 cells wide by terminals, shifting the card's right border
+// on the title line. Normalization must give the card exact geometry.
+func TestCardGeometryBareEmojiTitle(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	if got := normalizeEmoji("🖥Server maintenance"); got != "🖥️Server maintenance" {
+		t.Fatalf("normalizeEmoji = %q", got)
+	}
+	if got := normalizeEmoji("plain title"); got != "plain title" {
+		t.Fatalf("plain title changed: %q", got)
+	}
+	it := githubx.Item{
+		ID: "E1", Kind: githubx.KindDraft, DatabaseID: 157092128,
+		Title: "🖥Server maintenance (move Docker to /home)",
+	}
+	for _, w := range []int{56, 36, 30} {
+		card := m.comfortableCard(it, w, true)
+		lines := strings.Split(card, "\n")
+		if len(lines) != 5 {
+			t.Fatalf("w=%d: card has %d lines:\n%s", w, len(lines), card)
+		}
+		for i, l := range lines {
+			if lw := lipgloss.Width(l); lw != w {
+				t.Errorf("w=%d line %d lipgloss width %d: %q", w, i, lw, l)
+			}
+		}
+	}
+}

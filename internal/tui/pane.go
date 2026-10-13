@@ -47,7 +47,7 @@ func (m *model) renderDetail(w, h int) string {
 	}
 	it := *m.detail
 	var b strings.Builder
-	b.WriteString(m.theme.Title.Render(truncateRunes(it.Title, w)) + "\n")
+	b.WriteString(m.theme.Title.Render(truncateRunes(normalizeEmoji(it.Title), w)) + "\n")
 	b.WriteString(strings.Repeat("─", min(w, 45)) + "\n")
 	kindRef := string(it.Kind) + " · " + it.Ref()
 	fmt.Fprintf(&b, "Kind:     %s\n", kindRef)

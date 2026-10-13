@@ -580,7 +580,7 @@ func (m *model) cardMarker(it githubx.Item) string {
 
 func (m *model) comfortableCard(it githubx.Item, width int, focused bool) string {
 	inner := max(4, width-4) // border 2 + padding 2
-	title := truncateRunes(it.Title, inner-2)
+	title := truncateRunes(normalizeEmoji(it.Title), inner-2)
 	if focused {
 		title = "▸" + title
 	} else {
@@ -588,9 +588,9 @@ func (m *model) comfortableCard(it githubx.Item, width int, focused bool) string
 	}
 	marker := m.cardMarker(it)
 	if marker != "" {
-		title = truncateRunes(marker+it.Title, inner)
+		title = truncateRunes(marker+normalizeEmoji(it.Title), inner)
 		if focused {
-			title = "▸" + truncateRunes(marker+it.Title, inner-1)
+			title = "▸" + truncateRunes(marker+normalizeEmoji(it.Title), inner-1)
 		}
 	}
 	kindRef := string(it.Kind) + " " + it.Ref()
@@ -630,7 +630,7 @@ func (m *model) compactCardLines(it githubx.Item, width int, focused bool) (stri
 	if focused {
 		gutter = "▌"
 	}
-	title := m.cardMarker(it) + it.Title
+	title := m.cardMarker(it) + normalizeEmoji(it.Title)
 	// highlight search match by underline via style when filtered
 	t := truncateRunes(title, width-1)
 	if focused {

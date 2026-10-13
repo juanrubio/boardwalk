@@ -244,3 +244,52 @@ func padRight(s string, w int) string {
 	}
 	return s + strings.Repeat(" ", w-n)
 }
+
+// normalizeEmoji inserts U+FE0F (variation selector-16) after
+// emoji-capable runes that lack one. Bare emoji codepoints such as
+// U+1F5A5 (desktop computer) are counted as one cell by wcwidth-style
+// measurers (Lip Gloss, uniseg) but drawn two cells wide by most
+// terminals; the card border then lands one cell off on that line.
+// With VS16 every measurer and terminal agrees on two cells and the
+// emoji presentation, so fixed card geometry holds in real terminals.
+func normalizeEmoji(s string) string {
+	if !strings.ContainsFunc(s, func(r rune) bool { return r > 0x2000 }) {
+		return s
+	}
+	runes := []rune(s)
+	var b strings.Builder
+	b.Grow(len(s) + 8)
+	for i, r := range runes {
+		b.WriteRune(r)
+		if !isEmojiCapable(r) {
+			continue
+		}
+		if i+1 < len(runes) && (runes[i+1] == 0xFE0F || runes[i+1] == 0x200D) {
+			continue // already has a selector, or starts a ZWJ sequence
+		}
+		if i > 0 && runes[i-1] == 0x200D {
+			continue // inside a ZWJ sequence; its head carries presentation
+		}
+		b.WriteRune(0xFE0F)
+	}
+	return b.String()
+}
+
+func isEmojiCapable(r rune) bool {
+	switch {
+	case r >= 0x1F000 && r <= 0x1FAFF:
+		return true
+	case r >= 0x2600 && r <= 0x27BF:
+		return true
+	case r >= 0x2B00 && r <= 0x2BFF:
+		return true
+	case r >= 0x2300 && r <= 0x23FF:
+		return true
+	case r == 0x203C || r == 0x2049 || r == 0x2122 || r == 0x2139,
+		r >= 0x2194 && r <= 0x2199, r == 0x21A9 || r == 0x21AA,
+		r == 0x2934 || r == 0x2935, r == 0x3030 || r == 0x303D,
+		r == 0x3297 || r == 0x3299:
+		return true
+	}
+	return false
+}
