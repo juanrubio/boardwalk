@@ -15,11 +15,11 @@ import (
 	"github.com/juanrubio/gh-boardwalk/internal/theme"
 )
 
-var updateGolden = flag.Bool("update", false, "update golden frames")
+var updateGolden = flag.Bool("update-golden", false, "update golden frames")
 
 // Golden frames (tui.md §7): every named state at its size/profile is
 // compared byte-for-byte; a diff fails until deliberately updated with
-// `go test ./internal/tui/ -run TestGoldenFrames -update`.
+// `go test ./internal/tui/ -run TestGoldenFrames -update-golden`.
 func TestGoldenFrames(t *testing.T) {
 	type frame struct {
 		name  string
