@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -113,6 +114,7 @@ type model struct {
 	deleteStage    int
 	detailScroll   int
 	refreshFocusID string
+	vte            bool // VTE-family terminal (Ptyxis/GNOME Terminal): emoji width rules differ
 }
 
 type pageMsg struct {
@@ -162,6 +164,7 @@ type addResultMsg struct {
 func newModel(svc *core.Service, project githubx.Project, opts RunOptions) *model {
 	m := &model{
 		svc: svc, project: project, ctx: context.Background(),
+		vte:   os.Getenv("VTE_VERSION") != "",
 		theme: initialTheme(), density: "comfortable",
 		collapsed: map[string]bool{}, pending: map[string]*pendingMove{},
 		failed: map[string]string{}, board: &githubx.Board{Project: project},

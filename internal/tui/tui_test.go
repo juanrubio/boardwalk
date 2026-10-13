@@ -414,3 +414,33 @@ func TestCardGeometryBareEmojiTitle(t *testing.T) {
 		}
 	}
 }
+
+// VTE mode (Ptyxis/GNOME Terminal): text-default emoji count one cell
+// there, so displayTitle strips the selector and geometry still holds.
+func TestCardGeometryVTEMode(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	m.vte = true
+	if got := m.displayTitle("🖥️ Server maintenance"); got != "🖥 Server maintenance" {
+		t.Fatalf("VTE displayTitle = %q", got)
+	}
+	if got := m.displayTitle("✉️ SnazzyEmail"); got != "✉ SnazzyEmail" {
+		t.Fatalf("VTE displayTitle = %q", got)
+	}
+	it := githubx.Item{
+		ID: "E2", Kind: githubx.KindDraft, DatabaseID: 157092128,
+		Title: "🖥️ Server maintenance (move Docker to /home)",
+	}
+	card := m.comfortableCard(it, 56, true)
+	lines := strings.Split(card, "\n")
+	if len(lines) != 5 {
+		t.Fatalf("card has %d lines:\n%s", len(lines), card)
+	}
+	for i, l := range lines {
+		if lw := lipgloss.Width(l); lw != 56 {
+			t.Errorf("line %d width %d, want 56: %q", i, lw, l)
+		}
+	}
+	if strings.Contains(card, "\uFE0F") {
+		t.Errorf("VTE card should not contain VS16:\n%s", card)
+	}
+}

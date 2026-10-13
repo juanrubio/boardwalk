@@ -47,7 +47,7 @@ func (m *model) renderDetail(w, h int) string {
 	}
 	it := *m.detail
 	var b strings.Builder
-	b.WriteString(m.theme.Title.Render(truncateRunes(normalizeEmoji(it.Title), w)) + "\n")
+	b.WriteString(m.theme.Title.Render(truncateRunes(m.displayTitle(it.Title), w)) + "\n")
 	b.WriteString(strings.Repeat("─", min(w, 45)) + "\n")
 	kindRef := string(it.Kind) + " · " + it.Ref()
 	fmt.Fprintf(&b, "Kind:     %s\n", kindRef)
@@ -105,7 +105,7 @@ func (m *model) renderForm(w, h int) string {
 	if f.isDraft {
 		title = "New draft item"
 	} else if m.detail != nil {
-		title = "Edit — " + m.detail.Title
+		title = "Edit — " + m.displayTitle(m.detail.Title)
 	}
 	hdr := title
 	if !f.isDraft && f.dirtyCount() > 0 {

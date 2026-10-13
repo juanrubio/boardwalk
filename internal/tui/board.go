@@ -293,3 +293,38 @@ func isEmojiCapable(r rune) bool {
 	}
 	return false
 }
+
+// stripVS16 removes U+FE0F after emoji-capable runes. It is the VTE
+// mode of title normalization (see displayTitle on the model).
+func stripVS16(s string) string {
+	if !strings.ContainsRune(s, 0xFE0F) {
+		return s
+	}
+	runes := []rune(s)
+	var b strings.Builder
+	b.Grow(len(s))
+	for i, r := range runes {
+		if r == 0xFE0F && i > 0 && isEmojiCapable(runes[i-1]) {
+			continue
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
+// displayTitle normalizes a title for the current terminal family.
+// Most terminals count an emoji-plus-VS16 sequence as two cells (as
+// does Lip Gloss), so normalizeEmoji ensures the selector is present.
+// VTE-family terminals (Ptyxis, GNOME Terminal, …; they set
+// VTE_VERSION) count characters such as U+1F5A5 and U+2709 as ONE
+// cell with or without the selector — measured directly in Ptyxis —
+// so there the selector is stripped instead, and every measurer
+// (Lip Gloss, VTE, and the glyph renderer at one cell) agrees. In
+// both modes 💰-style emoji with default emoji presentation still
+// count two cells everywhere; only text-default emoji differ.
+func (m *model) displayTitle(s string) string {
+	if m.vte {
+		return stripVS16(s)
+	}
+	return normalizeEmoji(s)
+}
