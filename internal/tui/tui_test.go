@@ -444,3 +444,65 @@ func TestCardGeometryVTEMode(t *testing.T) {
 		t.Errorf("VTE card should not contain VS16:\n%s", card)
 	}
 }
+
+// A4: the editor is a centred modal with a real cursor — arrow keys
+// move the insertion point and typed text lands there.
+func TestEditorModalCursorAndArrows(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	m = send(m, "e")
+	if m.form == nil {
+		t.Fatal("edit did not open")
+	}
+	v := m.View().Content
+	if !strings.Contains(v, "╭") {
+		t.Fatalf("editor modal border missing:\n%s", v)
+	}
+	centered := false
+	for _, line := range strings.Split(v, "\n") {
+		if strings.Contains(line, "╭") && strings.HasPrefix(line, "    ") {
+			centered = true
+		}
+	}
+	if !centered {
+		t.Fatalf("editor modal is not centred:\n%s", v)
+	}
+	// Title field is focused with the cursor at the end. Left then
+	// type: the new character must land before the last character.
+	title := m.form.fields[0].value()
+	mm, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyLeft})
+	m = mm.(*model)
+	mm, _ = m.Update(tea.KeyPressMsg{Code: 'X', Text: "X"})
+	m = mm.(*model)
+	got := m.form.fields[0].value()
+	want := title[:len(title)-1] + "X" + title[len(title)-1:]
+	if got != want {
+		t.Fatalf("cursor insert: got %q want %q (title %q)", got, want, title)
+	}
+	if m.form.dirtyCount() == 0 {
+		t.Fatal("edit via cursor did not mark dirty")
+	}
+	// Body: Tab to it, type two lines, Up returns to the first line.
+	mm, _ = m.Update(key("tab"))
+	m = mm.(*model)
+	if m.form.idx != 1 {
+		t.Fatalf("Tab should focus Body (idx 1), got %d", m.form.idx)
+	}
+	for _, r := range "first" {
+		mm, _ = m.Update(tea.KeyPressMsg{Code: r, Text: string(r)})
+		m = mm.(*model)
+	}
+	mm, _ = m.Update(key("enter")) // newline in textarea
+	m = mm.(*model)
+	for _, r := range "second" {
+		mm, _ = m.Update(tea.KeyPressMsg{Code: r, Text: string(r)})
+		m = mm.(*model)
+	}
+	mm, _ = m.Update(tea.KeyPressMsg{Code: tea.KeyUp})
+	m = mm.(*model)
+	mm, _ = m.Update(tea.KeyPressMsg{Code: '!', Text: "!"})
+	m = mm.(*model)
+	body := m.form.fields[1].value()
+	if !strings.Contains(body, "first!") || !strings.Contains(body, "second") {
+		t.Fatalf("body arrow navigation failed, body:\n%s", body)
+	}
+}

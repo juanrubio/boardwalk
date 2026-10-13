@@ -13,16 +13,16 @@
 ╭──────────────────────────────────────╮                                                                                
 │  Fixture issue item 06               │                                                                                
 │   issue fixture/repo#18              │                                                                                
-╭─ Group by ───────────────────────────────╮
-│ ▸ Status                                 │
-│     Backlog: This item hasn't been star… │
-│     Ready: This is ready to be picked up │
-│     In progress: This is actively being… │
-│     In review: This item is in review    │
-│     Done: This has been completed        │
-│   Priority                               │
-│   Size                                   │
-╰──────────────────────────────────────────╯
+                                      ╭─ Group by ───────────────────────────────╮                                      
+                                      │ ▸ Status                                 │                                      
+                                      │     Backlog: This item hasn't been star… │                                      
+                                      │     Ready: This is ready to be picked up │                                      
+                                      │     In progress: This is actively being… │                                      
+                                      │     In review: This item is in review    │                                      
+                                      │     Done: This has been completed        │                                      
+                                      │   Priority                               │                                      
+                                      │   Size                                   │                                      
+                                      ╰──────────────────────────────────────────╯                                      
                                                                                                                         
                                                                                                                         
                                                                                                                         

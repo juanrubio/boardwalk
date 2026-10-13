@@ -172,11 +172,10 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 		m.pane = paneDetail
 		m.detail = &it
-		m.startEdit(it)
-		return m, m.loadDetailCmd(it.ID)
+		focusCmd := m.startEdit(it)
+		return m, tea.Batch(focusCmd, m.loadDetailCmd(it.ID))
 	case "n":
-		m.startNewDraft()
-		return m, nil
+		return m, m.startNewDraft()
 	case "a":
 		m.overlay = overlayAdd
 		m.addText, m.addPreview = "", ""

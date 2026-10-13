@@ -18,6 +18,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
+		m.syncFormLayout()
 		return m, nil
 	case tea.BackgroundColorMsg:
 		// Keep current theme; dark is the fallback per spec. Light is
@@ -42,6 +43,24 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.detail = &it
 		m.detailBody = msg.body
 		m.detailErr = ""
+		// If the edit form is open on this item, adopt the fetched
+		// Title/Body as the baseline for fields not yet touched.
+		if m.form != nil && !m.form.isDraft && m.form.itemID == it.ID {
+			for i := range m.form.fields {
+				ff := &m.form.fields[i]
+				if ff.value() != ff.oldDisp {
+					continue
+				}
+				switch ff.name {
+				case "Body":
+					ff.oldDisp = it.Body
+					ff.setValue(it.Body)
+				case "Title":
+					ff.oldDisp = it.Title
+					ff.setValue(it.Title)
+				}
+			}
+		}
 		m.replaceItem(it)
 		return m, nil
 	case moveTickMsg:
@@ -135,12 +154,16 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		if m.form != nil && msg.fieldIdx >= 0 && msg.fieldIdx < len(m.form.fields) {
-			m.form.fields[msg.fieldIdx].newVal = msg.body
+			m.form.fields[msg.fieldIdx].setValue(msg.body)
 			m.footer = "Body updated from editor."
 		}
 		return m, nil
 	case tea.KeyPressMsg:
 		return m.onKey(msg)
+	}
+	if m.form != nil && (m.pane == paneEdit || m.pane == paneNewDraft) {
+		// Cursor blink and component-internal messages (A4).
+		return m, m.routeFormMsg(msg)
 	}
 	return m, nil
 }

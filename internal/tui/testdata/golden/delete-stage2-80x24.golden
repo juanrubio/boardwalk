@@ -5,16 +5,16 @@
 ┃   issue fixture/repo#8               ┃ │   issue fixture/repo#32             │
 ┃                                      ┃ │                                     │
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰─────────────────────────────────────╯
-╭────────────────────────────────────────────╮
-│ ─ Confirm again — this cannot be undone ─… │
-│ fixture/repo#8                             │
-│ issue · Fixture issue item 04              │
-│                                            │
-│ This cannot be undone.                     │
-│ The issue itself stays open on GitHub.     │
-│                                            │
-│ [y] Yes, delete permanently    [any key] … │
-╰────────────────────────────────────────────╯
+                 ╭────────────────────────────────────────────╮                 
+                 │ ─ Confirm again — this cannot be undone ─… │                 
+                 │ fixture/repo#8                             │                 
+                 │ issue · Fixture issue item 04              │                 
+                 │                                            │                 
+                 │ This cannot be undone.                     │                 
+                 │ The issue itself stays open on GitHub.     │                 
+                 │                                            │                 
+                 │ [y] Yes, delete permanently    [any key] … │                 
+                 ╰────────────────────────────────────────────╯                 
 ╭──────────────────────────────────────╮                                        
 │  Fixture issue item 13               │                                        
 │   issue fixture/repo#39              │                                        

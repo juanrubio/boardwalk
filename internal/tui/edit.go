@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
+	"charm.land/bubbles/v2/textarea"
+	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/juanrubio/gh-boardwalk/internal/core"
@@ -23,6 +25,68 @@ type formField struct {
 	readonly bool
 	reason   string
 	err      string
+
+	input textinput.Model // title/date/number/text kinds (real cursor input, A4)
+	area  textarea.Model  // body kind
+}
+
+// value returns the field's current edit value from its component.
+func (ff *formField) value() string {
+	switch ff.kind {
+	case "body":
+		return ff.area.Value()
+	case "title", "date", "number", "text":
+		return ff.input.Value()
+	default:
+		return ff.newVal
+	}
+}
+
+// setValue replaces the edit value in the component and the mirror.
+func (ff *formField) setValue(v string) {
+	ff.newVal = v
+	switch ff.kind {
+	case "body":
+		ff.area.SetValue(v)
+	case "title", "date", "number", "text":
+		ff.input.SetValue(v)
+	}
+}
+
+func (ff *formField) blur() {
+	switch ff.kind {
+	case "body":
+		ff.area.Blur()
+	case "title", "date", "number", "text":
+		ff.input.Blur()
+	}
+}
+
+func (ff *formField) focus() tea.Cmd {
+	switch ff.kind {
+	case "body":
+		return ff.area.Focus()
+	case "title", "date", "number", "text":
+		return ff.input.Focus()
+	default:
+		return nil
+	}
+}
+
+func newTextInput(v string) textinput.Model {
+	ti := textinput.New()
+	ti.Prompt = ""
+	ti.SetValue(v)
+	ti.CursorEnd()
+	return ti
+}
+
+func newTextArea(v string) textarea.Model {
+	ta := textarea.New()
+	ta.Prompt = ""
+	ta.ShowLineNumbers = false
+	ta.SetValue(v)
+	return ta
 }
 
 type formState struct {
@@ -37,8 +101,8 @@ type formState struct {
 
 func (f *formState) dirtyCount() int {
 	n := 0
-	for _, ff := range f.fields {
-		if ff.newVal != ff.oldDisp {
+	for i := range f.fields {
+		if f.fields[i].value() != f.fields[i].oldDisp {
 			n++
 		}
 	}
@@ -56,12 +120,16 @@ type summaryState struct {
 	pendingRetry []core.Change
 }
 
-func (m *model) startEdit(it githubx.Item) {
+func (m *model) startEdit(it githubx.Item) tea.Cmd {
 	m.pane = paneEdit
 	f := &formState{itemID: it.ID, origBody: it.Body}
-	f.fields = append(f.fields, formField{name: "Title", kind: "title", oldDisp: it.Title, newVal: it.Title})
+	titleFF := formField{name: "Title", kind: "title", oldDisp: it.Title, newVal: it.Title}
+	titleFF.input = newTextInput(it.Title)
+	f.fields = append(f.fields, titleFF)
 	body := it.Body
-	f.fields = append(f.fields, formField{name: "Body", kind: "body", oldDisp: body, newVal: body})
+	bodyFF := formField{name: "Body", kind: "body", oldDisp: body, newVal: body}
+	bodyFF.area = newTextArea(body)
+	f.fields = append(f.fields, bodyFF)
 	if m.board != nil {
 		for _, fld := range m.board.Fields {
 			if fld.DataType == "TITLE" {
@@ -93,10 +161,13 @@ func (m *model) startEdit(it githubx.Item) {
 				}
 			case "DATE":
 				ff.kind = "date"
+				ff.input = newTextInput(old)
 			case "NUMBER":
 				ff.kind = "number"
+				ff.input = newTextInput(old)
 			case "TEXT":
 				ff.kind = "text"
+				ff.input = newTextInput(old)
 			default:
 				ff.kind = "readonly"
 				ff.readonly = true
@@ -107,16 +178,86 @@ func (m *model) startEdit(it githubx.Item) {
 	}
 	m.form = f
 	m.summary = nil
+	m.syncFormLayout()
+	return m.focusField(0)
 }
 
-func (m *model) startNewDraft() {
+func (m *model) startNewDraft() tea.Cmd {
 	m.pane = paneNewDraft
 	m.detail = nil
-	m.form = &formState{isDraft: true, fields: []formField{
-		{name: "Title", kind: "title", oldDisp: "", newVal: ""},
-		{name: "Body", kind: "body", oldDisp: "", newVal: ""},
-	}}
+	titleFF := formField{name: "Title", kind: "title"}
+	titleFF.input = newTextInput("")
+	bodyFF := formField{name: "Body", kind: "body"}
+	bodyFF.area = newTextArea("")
+	m.form = &formState{isDraft: true, fields: []formField{titleFF, bodyFF}}
 	m.summary = nil
+	m.syncFormLayout()
+	return m.focusField(0)
+}
+
+// modalSize is the centred editor modal geometry (A4): generous, but
+// never closer than 4 cells to the terminal edges.
+func (m *model) modalSize() (int, int) {
+	w, h := m.width, m.height
+	if w == 0 {
+		w, h = 120, 40
+	}
+	mw := min(w-8, 110)
+	if mw < 40 {
+		mw = max(20, w-4)
+	}
+	mh := min(h-6, 34)
+	if mh < 12 {
+		mh = max(8, h-4)
+	}
+	return mw, mh
+}
+
+// syncFormLayout sizes the text components to the modal.
+func (m *model) syncFormLayout() {
+	if m.form == nil {
+		return
+	}
+	mw, mh := m.modalSize()
+	inputW := max(10, mw-24)
+	bodyH := mh - len(m.form.fields) - 9
+	if bodyH < 4 {
+		bodyH = 4
+	}
+	if bodyH > 14 {
+		bodyH = 14
+	}
+	for i := range m.form.fields {
+		ff := &m.form.fields[i]
+		switch ff.kind {
+		case "body":
+			ff.area.SetWidth(max(10, mw-10))
+			ff.area.SetHeight(bodyH)
+		case "title", "date", "number", "text":
+			ff.input.SetWidth(inputW)
+		}
+	}
+}
+
+// focusField moves form focus, blurring the old component and
+// returning the new component's focus (blink) command.
+func (m *model) focusField(idx int) tea.Cmd {
+	f := m.form
+	if f == nil || len(f.fields) == 0 {
+		return nil
+	}
+	if idx < 0 {
+		idx = 0
+	}
+	if idx >= len(f.fields) {
+		idx = len(f.fields) - 1
+	}
+	if f.idx >= 0 && f.idx < len(f.fields) {
+		f.fields[f.idx].blur()
+	}
+	f.idx = idx
+	f.picker = false
+	return f.fields[idx].focus()
 }
 
 func (m *model) formChanges() ([]core.Change, error) {
@@ -134,20 +275,22 @@ func (m *model) formChanges() ([]core.Change, error) {
 	}
 	var changes []core.Change
 	board := &githubx.Board{Project: m.project, Fields: m.board.Fields, Items: m.board.Items}
-	for _, ff := range m.form.fields {
-		if ff.readonly || ff.newVal == ff.oldDisp {
+	for i := range m.form.fields {
+		ff := &m.form.fields[i]
+		v := ff.value()
+		if ff.readonly || v == ff.oldDisp {
 			continue
 		}
 		switch ff.name {
 		case "Title":
-			if strings.TrimSpace(ff.newVal) == "" {
+			if strings.TrimSpace(v) == "" {
 				return nil, fmt.Errorf("title must not be empty")
 			}
-			changes = append(changes, core.Change{Field: "Title", Old: ff.oldDisp, New: ff.newVal, IsTitle: true, NewTitle: ff.newVal})
+			changes = append(changes, core.Change{Field: "Title", Old: ff.oldDisp, New: v, IsTitle: true, NewTitle: v})
 		case "Body":
-			changes = append(changes, core.Change{Field: "Body", Old: truncateSummaryLocal(ff.oldDisp), New: truncateSummaryLocal(ff.newVal), IsBody: true, NewBody: ff.newVal})
+			changes = append(changes, core.Change{Field: "Body", Old: truncateSummaryLocal(ff.oldDisp), New: truncateSummaryLocal(v), IsBody: true, NewBody: v})
 		default:
-			ch, err := core.ParseFieldAssignment(board, base, ff.name+"="+ff.newVal)
+			ch, err := core.ParseFieldAssignment(board, base, ff.name+"="+v)
 			if err != nil {
 				return nil, err
 			}
@@ -175,10 +318,11 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 			f.picker = false
 		case "enter":
 			if f.pickIdx >= 0 && f.pickIdx < len(cur.options) {
-				f.fields[f.idx].newVal = cur.options[f.pickIdx]
-				if cur.options[f.pickIdx] == "(clear)" {
-					f.fields[f.idx].newVal = ""
+				v := cur.options[f.pickIdx]
+				if v == "(clear)" {
+					v = ""
 				}
+				f.fields[f.idx].setValue(v)
 			}
 			f.picker = false
 		default:
@@ -201,12 +345,12 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 		if f.isDraft {
 			title := ""
 			var body string
-			for _, ff := range f.fields {
-				if ff.name == "Title" {
-					title = ff.newVal
+			for i := range f.fields {
+				if f.fields[i].name == "Title" {
+					title = f.fields[i].value()
 				}
-				if ff.name == "Body" {
-					body = ff.newVal
+				if f.fields[i].name == "Body" {
+					body = f.fields[i].value()
 				}
 			}
 			if strings.TrimSpace(title) == "" {
@@ -258,7 +402,7 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 			return m, nil
 		}
 		path := tmp.Name()
-		_, _ = tmp.WriteString(f.fields[bodyIdx].newVal)
+		_, _ = tmp.WriteString(f.fields[bodyIdx].value())
 		_ = tmp.Close()
 		parts := strings.Fields(editor)
 		args := append(append([]string{}, parts[1:]...), path)
@@ -274,16 +418,20 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 			}
 			return editorDoneMsg{body: string(data), fieldIdx: bodyIdx}
 		})
-	case "tab", "down":
-		if f.idx < len(f.fields)-1 {
-			f.idx++
+	case "tab":
+		return m, m.focusField(f.idx + 1)
+	case "shift+tab":
+		return m, m.focusField(f.idx - 1)
+	case "down":
+		if f.fields[f.idx].kind == "body" {
+			return m.routeFormKey(msg)
 		}
-		return m, nil
-	case "shift+tab", "up":
-		if f.idx > 0 {
-			f.idx--
+		return m, m.focusField(f.idx + 1)
+	case "up":
+		if f.fields[f.idx].kind == "body" {
+			return m.routeFormKey(msg)
 		}
-		return m, nil
+		return m, m.focusField(f.idx - 1)
 	case "esc":
 		if f.dirtyCount() > 0 {
 			m.overlay = overlayDiscard
@@ -297,46 +445,57 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 			f.picker = true
 			f.pickIdx = 0
 			for i, o := range cur.options {
-				if o == cur.newVal {
+				if o == cur.value() {
 					f.pickIdx = i
 				}
 			}
-		}
-		return m, nil
-	case "backspace":
-		cur := &f.fields[f.idx]
-		if cur.readonly {
 			return m, nil
 		}
-		if cur.kind == "select" || cur.kind == "iteration" {
-			return m, nil
+		if cur.kind == "body" {
+			return m.routeFormKey(msg) // newline in the text area
 		}
-		r := []rune(cur.newVal)
-		if len(r) > 0 {
-			cur.newVal = string(r[:len(r)-1])
-			cur.err = validateField(cur.kind, cur.newVal)
-		}
-		return m, nil
+		// Single-line input: Enter moves to the next field.
+		return m, m.focusField(f.idx + 1)
 	}
-	// Text capture: focused input captures printable keys (§2 A1)
-	if msg.Key().Text != "" {
-		cur := &f.fields[f.idx]
-		if cur.readonly || cur.kind == "select" || cur.kind == "iteration" {
-			return m, nil
-		}
-		cur.newVal += msg.Key().Text
-		cur.err = validateField(cur.kind, cur.newVal)
-		return m, nil
+	// Everything else (printable keys, cursor keys, backspace, Home/
+	// End) goes to the focused component: it owns the cursor (A4).
+	return m.routeFormKey(msg)
+}
+
+// routeFormKey delivers a key to the focused text component and
+// syncs the field mirror + validation. Cursor keys, Home/End, and
+// text all land here: the component owns the cursor (A4).
+func (m *model) routeFormKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	return m, m.routeToComponent(msg)
+}
+
+// routeFormMsg delivers non-key messages (cursor blink) likewise.
+func (m *model) routeFormMsg(msg tea.Msg) tea.Cmd {
+	return m.routeToComponent(msg)
+}
+
+func (m *model) routeToComponent(msg tea.Msg) tea.Cmd {
+	f := m.form
+	if f == nil || f.idx < 0 || f.idx >= len(f.fields) {
+		return nil
 	}
-	// Space for text fields (Key.Text is " " usually handled above)
-	if s == " " {
-		cur := &f.fields[f.idx]
-		if !cur.readonly && cur.kind != "select" && cur.kind != "iteration" {
-			cur.newVal += " "
-		}
-		return m, nil
+	ff := &f.fields[f.idx]
+	var cmd tea.Cmd
+	switch ff.kind {
+	case "body":
+		var nm textarea.Model
+		nm, cmd = ff.area.Update(msg)
+		ff.area = nm
+	case "title", "date", "number", "text":
+		var nm textinput.Model
+		nm, cmd = ff.input.Update(msg)
+		ff.input = nm
+	default:
+		return nil
 	}
-	return m, nil
+	ff.newVal = ff.value()
+	ff.err = validateField(ff.kind, ff.newVal)
+	return cmd
 }
 
 func validateField(kind, v string) string {

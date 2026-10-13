@@ -61,15 +61,22 @@ func (m *model) viewMain(w, h int) string {
 	bodyH := max(1, h-2)
 	var body string
 	body = m.renderBoardArea(w, bodyH)
+	// Editor and its change summary are centred modals (A4).
+	if m.overlay == overlayNone && (m.pane == paneEdit || m.pane == paneNewDraft) {
+		body = overlayCenter(body, m.renderFormModal(), w, bodyH)
+	}
+	if m.overlay == overlayNone && m.pane == paneSummary {
+		body = overlayCenter(body, m.renderSummaryModal(), w, bodyH)
+	}
 	switch m.overlay {
 	case overlayHelp:
-		body = overlayCenter(body, m.renderHelp(w), bodyH)
+		body = overlayCenter(body, m.renderHelp(w), w, bodyH)
 	case overlayArchive:
-		body = overlayCenter(body, m.renderArchiveModal(w), bodyH)
+		body = overlayCenter(body, m.renderArchiveModal(w), w, bodyH)
 	case overlayDelete:
-		body = overlayCenter(body, m.renderDeleteModal(w), bodyH)
+		body = overlayCenter(body, m.renderDeleteModal(w), w, bodyH)
 	case overlayGroup:
-		body = overlayCenter(body, m.renderGroupPicker(w), bodyH)
+		body = overlayCenter(body, m.renderGroupPicker(w), w, bodyH)
 	}
 	// Overlay prompts (search/add) replace header line 2 handling via footer/header
 	lines := []string{header}
@@ -95,13 +102,21 @@ func splitLines(s string, n int) []string {
 }
 
 // overlayCenter draws box over body lines (simple replacement of middle lines).
-func overlayCenter(body, box string, h int) string {
+func overlayCenter(body, box string, w, h int) string {
 	lines := splitLines(body, h)
 	boxLines := strings.Split(box, "\n")
+	boxW := 0
+	for _, bl := range boxLines {
+		if lw := lipgloss.Width(bl); lw > boxW {
+			boxW = lw
+		}
+	}
+	left := max(0, (w-boxW)/2)
+	pad := strings.Repeat(" ", left)
 	start := max(0, (h-len(boxLines))/2)
 	for i, bl := range boxLines {
 		if start+i < len(lines) {
-			lines[start+i] = bl
+			lines[start+i] = padVisible(pad+bl, w)
 		}
 	}
 	return strings.Join(lines, "\n")
@@ -221,7 +236,7 @@ func (m *model) footerHint() string {
 		if m.form != nil && m.form.dirtyCount() > 0 {
 			dirty = fmt.Sprintf(" · %d changes · Ctrl-S review & save", m.form.dirtyCount())
 		}
-		return "Tab/↑↓ field · Enter pick · Ctrl-S review & save · Esc back (asks if dirty)" + dirty
+		return "Type to edit · ←→ cursor · Tab/↑↓ field · Enter pick · Ctrl-E $EDITOR · Ctrl-S review & save · Esc back" + dirty
 	case paneDetail:
 		if m.paneFocus {
 			return "↑↓/jk scroll · Tab board · Esc close pane"
@@ -238,8 +253,9 @@ func (m *model) footerHint() string {
 }
 
 func (m *model) renderBoardArea(w, h int) string {
-	// Detail split: board 60% / pane 40% on wide terminals (≥90), else full pane.
-	if m.pane != paneNone && m.detail != nil || m.pane == paneNewDraft || m.pane == paneEdit || m.pane == paneSummary {
+	// Detail split: board 60% / pane 40% on wide terminals (≥90), else
+	// full pane. Edit/draft/summary render as centred modals (A4).
+	if m.pane == paneDetail && m.detail != nil {
 		if w >= 90 {
 			paneW := w * 40 / 100
 			boardW := w - paneW - 1 // 1 separator

@@ -5,16 +5,16 @@
 ┃   issue fixture/repo#8               ┃ │   issue fixture/repo#32             │
 ┃                                      ┃ │                                     │
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╰─────────────────────────────────────╯
-╭──────────────────────────────────────────╮
-│ ─ Archive item? ──────────               │
-│ fixture/repo#8                           │
-│ issue · Fixture issue item 04            │
-│                                          │
-│ It leaves the board; the issue itself    │
-│ stays open on GitHub.                    │
-│                                          │
-│ [y] Archive    [any key] Cancel          │
-╰──────────────────────────────────────────╯
+                  ╭──────────────────────────────────────────╮                  
+                  │ ─ Archive item? ──────────               │                  
+                  │ fixture/repo#8                           │                  
+                  │ issue · Fixture issue item 04            │                  
+                  │                                          │                  
+                  │ It leaves the board; the issue itself    │                  
+                  │ stays open on GitHub.                    │                  
+                  │                                          │                  
+                  │ [y] Archive    [any key] Cancel          │                  
+                  ╰──────────────────────────────────────────╯                  
 ╭──────────────────────────────────────╮                                        
 │  Fixture issue item 13               │                                        
 │   issue fixture/repo#39              │                                        

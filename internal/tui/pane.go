@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	glamour "charm.land/glamour/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/juanrubio/gh-boardwalk/internal/core"
 	"github.com/juanrubio/gh-boardwalk/internal/githubx"
@@ -95,6 +96,28 @@ func (m *model) renderDetail(w, h int) string {
 	return strings.Join(splitLines(strings.Join(lines, "\n"), h), "\n")
 }
 
+// renderFormModal is the edit form as a centred modal (A4).
+func (m *model) renderFormModal() string {
+	mw, mh := m.modalSize()
+	return m.modalBox(m.renderForm(mw-4, mh-4), mw, mh)
+}
+
+// renderSummaryModal is the change summary as a centred modal (A4).
+func (m *model) renderSummaryModal() string {
+	mw, mh := m.modalSize()
+	return m.modalBox(m.renderSummary(mw-4, mh-6), mw, mh)
+}
+
+func (m *model) modalBox(content string, mw, mh int) string {
+	style := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(m.theme.Tokens.BorderFocus).
+		Padding(0, 1).
+		Width(mw).
+		MaxHeight(mh)
+	return style.Render(content)
+}
+
 func (m *model) renderForm(w, h int) string {
 	f := m.form
 	if f == nil {
@@ -112,47 +135,100 @@ func (m *model) renderForm(w, h int) string {
 		hdr += fmt.Sprintf("  (%d changes)", f.dirtyCount())
 	}
 	b.WriteString(m.theme.Title.Render(truncateRunes(hdr, w)) + "\n")
-	b.WriteString(strings.Repeat("─", min(w, 45)) + "\n")
-	for i, ff := range f.fields {
+	b.WriteString(strings.Repeat("─", min(w, 64)) + "\n")
+	labelW := 12
+	for i := range f.fields {
+		if n := len(f.fields[i].name) + 1; n > labelW {
+			labelW = n
+		}
+	}
+	// Build one block of lines per field, then window the blocks so
+	// the focused field is always visible inside the modal (A4).
+	blocks := make([][]string, len(f.fields))
+	for i := range f.fields {
+		ff := &f.fields[i]
 		focus := "  "
 		if i == f.idx {
 			focus = "▸ "
 		}
 		dirty := ""
-		if ff.newVal != ff.oldDisp {
+		if ff.value() != ff.oldDisp {
 			dirty = " ●"
 		}
-		val := ff.newVal
-		if ff.readonly {
+		label := fmt.Sprintf("%s%-*s", focus, labelW, ff.name+":")
+		if ff.kind == "body" {
+			block := []string{label + dirty}
+			for _, l := range strings.Split(ff.area.View(), "\n") {
+				block = append(block, "  "+l)
+			}
+			if ff.err != "" {
+				block = append(block, "  ✗ "+ff.err)
+			}
+			blocks[i] = block
+			continue
+		}
+		var val string
+		switch {
+		case ff.readonly:
 			val = ff.oldDisp + " (read-only: " + ff.reason + ")"
+		case ff.kind == "select" || ff.kind == "iteration":
+			val = ff.value()
+			if i == f.idx {
+				val += "  [Enter pick]"
+			}
+		default: // textinput kinds: the component renders its own cursor
+			val = ff.input.View()
 		}
-		if (ff.kind == "select" || ff.kind == "iteration") && i == f.idx {
-			val += "  [Enter pick]"
-		}
-		line := fmt.Sprintf("%s%-10s %s%s", focus, ff.name+":", val, dirty)
+		line := label + " " + val + dirty
 		if ff.err != "" {
 			line += "  ✗ " + ff.err
 		}
-		if i == f.idx {
+		if i == f.idx && ff.kind != "title" && ff.kind != "date" && ff.kind != "number" && ff.kind != "text" {
 			line = m.theme.CardTitle.Bold(true).Render(truncateRunes(line, w))
-		} else {
+		} else if i != f.idx {
 			line = truncateRunes(line, w)
 		}
-		b.WriteString(line + "\n")
+		block := []string{line}
 		if f.picker && i == f.idx {
 			for pi, o := range ff.options {
 				mark := "    "
 				if pi == f.pickIdx {
 					mark = "  ▸ "
 				}
-				b.WriteString(mark + o + "\n")
+				block = append(block, mark+o)
 			}
+		}
+		blocks[i] = block
+	}
+	avail := max(1, h-4) // header (2) + footer (2)
+	start := 0
+	for {
+		used, focusEnd := 0, 0
+		for i := start; i < len(blocks); i++ {
+			used += len(blocks[i])
+			if i == f.idx {
+				focusEnd = used
+			}
+		}
+		if focusEnd <= avail || start >= f.idx {
+			break
+		}
+		start++
+	}
+	shown := 0
+	for i := start; i < len(blocks) && shown < avail; i++ {
+		for _, l := range blocks[i] {
+			if shown >= avail {
+				break
+			}
+			b.WriteString(l + "\n")
+			shown++
 		}
 	}
 	if !f.isDraft {
-		b.WriteString("\n● = changed · Ctrl-S review & save · Esc back\n")
+		b.WriteString("\n● = changed · Type to edit, arrows move the cursor · Tab field · Ctrl-E $EDITOR · Ctrl-S review & save · Esc back\n")
 	} else {
-		b.WriteString("\nCtrl-S review & create · Esc back\n")
+		b.WriteString("\nType to edit, arrows move the cursor · Tab field · Ctrl-E $EDITOR · Ctrl-S review & create · Esc back\n")
 	}
 	return strings.Join(splitLines(b.String(), h), "\n")
 }
