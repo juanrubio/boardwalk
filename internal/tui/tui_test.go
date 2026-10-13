@@ -284,6 +284,50 @@ func TestNoSingleSelectForcesList(t *testing.T) {
 	}
 }
 
+// Regression (A5): the focused card's selection background must cover
+// the text itself, not only padding and trailing spaces — the inner
+// title/meta styles reset SGR, so each line style must carry the
+// background. Every content line needs the bg code at least twice
+// (stripe segment + text segment).
+func TestFocusedCardBackgroundCoversText(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	m.theme = theme.Dark()
+	it := githubx.Item{
+		ID: "X", Kind: githubx.KindIssue,
+		Title: "Add annual billing option",
+		Repo:  "juanrubio/snazzyemail", Number: 8,
+	}
+	card := m.comfortableCard(it, 36, true, "BLUE")
+	lines := strings.Split(card, "\n")
+	if len(lines) != 5 {
+		t.Fatalf("card has %d lines, want 5:\n%s", len(lines), card)
+	}
+	for i, l := range lines {
+		if w := lipgloss.Width(l); w != 36 {
+			t.Errorf("line %d width %d, want 36: %q", i, w, l)
+		}
+	}
+	const bg = "48;2;31;58;95" // SelectionBG #1F3A5F
+	// The SGR sequence immediately before the text must carry the bg;
+	// counting bg codes is not enough (padding alone would pass, and
+	// the terminal cell model showed text cells on default bg).
+	for i, text := range map[int]string{1: "Add annual billing", 2: "issue juanrubio/snazzyemail#8"} {
+		idx := strings.Index(lines[i], text)
+		if idx < 0 {
+			t.Fatalf("line %d lacks %q: %q", i, text, lines[i])
+		}
+		esc := strings.LastIndex(lines[i][:idx], "\x1b[")
+		if esc < 0 || !strings.Contains(lines[i][esc:idx], bg) {
+			t.Errorf("line %d SGR before text lacks selection bg: %q", i, lines[i])
+		}
+	}
+	for i := 1; i <= 3; i++ {
+		if n := strings.Count(lines[i], bg); n < 2 {
+			t.Errorf("content line %d has selection bg %d times, want >= 2: %q", i, n, lines[i])
+		}
+	}
+}
+
 // Regression: wide (emoji) titles and long references must not wrap
 // a comfortable card past its fixed 5-line, 36-cell geometry.
 func TestCardGeometryWideTitle(t *testing.T) {

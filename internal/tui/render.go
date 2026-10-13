@@ -624,11 +624,25 @@ func (m *model) comfortableCard(it githubx.Item, width int, focused bool, colCol
 		meta += strings.Join(pairs, " · ")
 	}
 	line3 := " " + truncateRunes(meta, inner-2)
-	stripe := m.theme.Stripe(colColor).Render("▎")
+	// The focused background must live on each line's own styles: the
+	// card-level background alone is reset by the inner title/meta
+	// styles, leaving text cells on the default background (A5 fix).
+	titleStyle, metaStyle := m.theme.CardTitle, m.theme.Meta
+	stripeStyle := m.theme.Stripe(colColor)
+	if focused {
+		bg := m.theme.Tokens.SelectionBG
+		titleStyle = titleStyle.Background(bg)
+		metaStyle = metaStyle.Background(bg)
+		stripeStyle = stripeStyle.Background(bg)
+		title = padRight(title, inner-1)
+		line2 = padRight(line2, inner-1)
+		line3 = padRight(line3, inner-1)
+	}
+	stripe := stripeStyle.Render("▎")
 	content := strings.Join([]string{
-		stripe + m.theme.CardTitle.Render(title),
-		stripe + m.theme.Meta.Render(line2),
-		stripe + m.theme.Meta.Render(line3),
+		stripe + titleStyle.Render(title),
+		stripe + metaStyle.Render(line2),
+		stripe + metaStyle.Render(line3),
 	}, "\n")
 	style := m.theme.Card
 	if focused {
