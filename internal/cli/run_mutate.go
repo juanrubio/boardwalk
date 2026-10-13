@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	"charm.land/huh/v2"
+
 	"github.com/juanrubio/gh-boardwalk/internal/core"
 	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
 	"github.com/juanrubio/gh-boardwalk/internal/githubx"
@@ -51,10 +53,18 @@ func confirmGate(opts *Options, summary []string) (proceed bool, err error) {
 			WithRemediation("Re-run with --yes to proceed, or --dry-run to preview only.")
 	}
 	printSummary("Apply these changes?")
-	_, _ = fmt.Fprint(opts.Out, "  [y/N] ")
-	reader := bufio.NewReader(opts.In)
-	line, _ := reader.ReadString('\n')
-	if strings.ToLower(strings.TrimSpace(line)) != "y" {
+	ok := false
+	form := huh.NewForm(huh.NewGroup(
+		huh.NewConfirm().Title("Apply these changes?").Affirmative("Apply").Negative("Cancel").Value(&ok),
+	))
+	if err := form.Run(); err != nil {
+		// Fall back to a plain y/N read when the form cannot run.
+		_, _ = fmt.Fprint(opts.Out, "  [y/N] ")
+		reader := bufio.NewReader(opts.In)
+		line, _ := reader.ReadString('\n')
+		ok = strings.ToLower(strings.TrimSpace(line)) == "y"
+	}
+	if !ok {
 		_, _ = fmt.Fprintln(opts.Out, "Aborted — nothing was changed.")
 		return false, nil
 	}

@@ -54,8 +54,10 @@ func TestItemListOfflineHumanAndFilter(t *testing.T) {
 	if err := root.Execute(); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(buf.String(), "Showing 0 of 14") {
-		t.Fatalf("unexpected output:\n%s", buf.String())
+	// Piped output is TSV with no header/footer (cli.md Section 5):
+	// an empty filter result is empty output.
+	if strings.TrimSpace(buf.String()) != "" {
+		t.Fatalf("expected empty TSV output, got:\n%s", buf.String())
 	}
 }
 

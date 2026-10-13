@@ -189,7 +189,12 @@ func runItemList(ctx context.Context, opts *Options, f listFilters) error {
 	if err != nil {
 		return err
 	}
-	board, err := svc.LoadBoard(ctx, project, f.Search, nil)
+	var board *githubx.Board
+	err = withSpinner(opts, "Loading board…", func() error {
+		var e error
+		board, e = svc.LoadBoard(ctx, project, f.Search, nil)
+		return e
+	})
 	if err != nil {
 		return err
 	}
@@ -205,20 +210,7 @@ func runItemList(ctx context.Context, opts *Options, f listFilters) error {
 		enc.SetIndent("", "  ")
 		return enc.Encode(out)
 	}
-	statusField, _ := githubx.DefaultBoardField(board.Fields)
-	w := tabwriter.NewWriter(opts.Out, 0, 2, 2, ' ', 0)
-	_, _ = fmt.Fprintln(w, "REF\tSTATUS\tTITLE\tASSIGNEE")
-	for _, it := range items {
-		status := "-"
-		if statusField.Name != "" {
-			status = fieldValue(it, statusField.Name)
-		}
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", it.Ref(), status, it.Title, assigneeDisplay(it))
-	}
-	if err := w.Flush(); err != nil {
-		return err
-	}
-	_, _ = fmt.Fprintf(opts.Out, "\nShowing %d of %d items in %s (%s)\n", len(items), len(board.Items), project.Title, project.Ref())
+	renderItemList(opts, board, project, items, len(board.Items))
 	return nil
 }
 
