@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/gh-boardwalk/internal/tui"
 )
 
 // Command runners. The read path is implemented in run_read.go and the
@@ -17,13 +17,14 @@ type listFilters struct {
 	Search   string
 }
 
-func unimplemented(opts *Options, what string) error {
-	if _, err := opts.service(); err != nil {
+func runBoard(ctx context.Context, opts *Options, list bool) error {
+	svc, err := opts.service()
+	if err != nil {
 		return err
 	}
-	return exiterr.Failuref("%s is not implemented yet in this build step", what)
-}
-
-func runBoard(_ context.Context, opts *Options, _ bool) error {
-	return unimplemented(opts, "board (TUI)")
+	project, err := svc.ResolveSelectedProject(ctx, opts.Project)
+	if err != nil {
+		return err
+	}
+	return tui.Run(ctx, svc, project, tui.RunOptions{StartInList: list})
 }
