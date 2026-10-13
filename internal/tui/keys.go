@@ -83,6 +83,8 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 		m.overlay = overlayNone
 		return m, nil
+	case overlayBoards:
+		return m.onBoardsKey(msg, ks)
 	case overlayGroup:
 		return m.onGroupKey(s)
 	case overlaySearch:
@@ -262,6 +264,29 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.savePrefs()
 		m.footer = "Density: " + m.density
 		return m, nil
+	case "P":
+		// Board picker (A6): board-level only, never over a pane/form.
+		if m.pane != paneNone {
+			return m, nil
+		}
+		if m.boards != nil {
+			m.openBoardPicker()
+			return m, nil
+		}
+		m.overlay = overlayBoards
+		m.boardFilter = ""
+		m.boardIdx = 0
+		m.boardsErr = ""
+		return m, m.requestBoards(0, true)
+	case "[", "]":
+		if m.pane != paneNone {
+			return m, nil
+		}
+		dir := 1
+		if s == "[" {
+			dir = -1
+		}
+		return m, m.requestBoards(dir, false)
 	case "/":
 		m.overlay = overlaySearch
 		m.searchText = m.filter
@@ -463,6 +488,46 @@ func (m *model) onGroupKey(s string) (tea.Model, tea.Cmd) {
 			m.footer = "Grouped by " + m.groupField.Name
 		}
 		m.overlay = overlayNone
+	}
+	return m, nil
+}
+
+// onBoardsKey handles the board picker (A6): arrows move, printable
+// keys extend the filter, Enter switches, Esc cancels.
+func (m *model) onBoardsKey(msg tea.KeyPressMsg, ks string) (tea.Model, tea.Cmd) {
+	list := m.filteredBoards()
+	switch ks {
+	case "esc":
+		m.overlay = overlayNone
+		return m, nil
+	case "enter":
+		if m.boardIdx >= 0 && m.boardIdx < len(list) {
+			p := list[m.boardIdx]
+			m.overlay = overlayNone
+			return m, m.switchTo(p)
+		}
+		return m, nil
+	case "down":
+		if m.boardIdx < len(list)-1 {
+			m.boardIdx++
+		}
+		return m, nil
+	case "up":
+		if m.boardIdx > 0 {
+			m.boardIdx--
+		}
+		return m, nil
+	case "backspace":
+		r := []rune(m.boardFilter)
+		if len(r) > 0 {
+			m.boardFilter = string(r[:len(r)-1])
+			m.boardIdx = 0
+		}
+		return m, nil
+	}
+	if msg.Key().Text != "" {
+		m.boardFilter += msg.Key().Text
+		m.boardIdx = 0
 	}
 	return m, nil
 }

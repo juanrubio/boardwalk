@@ -84,6 +84,17 @@ func TestGoldenFrames(t *testing.T) {
 		{"archive-80x24", 80, 24, func(m *model) { m.overlay = overlayArchive }},
 		{"delete-stage2-80x24", 80, 24, func(m *model) { m.overlay = overlayDelete; m.deleteStage = 1 }},
 		{"group-picker-120x40", 120, 40, func(m *model) { m.overlay = overlayGroup }},
+		{"board-picker-120x40", 120, 40, func(m *model) {
+			m.boards = []githubx.Project{
+				{ID: "o7", Owner: "fixture-org", Number: 7, Title: "Org Roadmap"},
+				{ID: "u1", Owner: "fixture-user", Number: 1, Title: "SnazzyEmail (fixture)"},
+				{ID: "u3", Owner: "fixture-user", Number: 3, Title: "Life Board"},
+			}
+			// testModel's project is a distinct instance; mark by ref match.
+			m.boards[1].ID = m.project.ID
+			m.overlay = overlayBoards
+			m.boardIdx = 1
+		}},
 		{"too-small-50x12", 50, 12, nil},
 		{"new-draft-120x40", 120, 40, func(m *model) { m.startNewDraft() }},
 	}

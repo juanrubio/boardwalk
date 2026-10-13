@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -33,7 +34,42 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case pageMsg:
+		if msg.projectID != "" && msg.projectID != m.project.ID {
+			return m, nil // page for a board we have left (A6)
+		}
 		return m.onPage(msg)
+	case boardsMsg:
+		m.boardsLoading = false
+		if msg.err != nil {
+			m.boardsErr = msg.err.Error()
+			m.pendingCycle = 0
+			if m.overlay == overlayBoards {
+				return m, nil
+			}
+			m.footer = "Boards failed: " + msg.err.Error()
+			return m, nil
+		}
+		m.boards = msg.projects
+		sort.Slice(m.boards, func(i, j int) bool {
+			if m.boards[i].Owner != m.boards[j].Owner {
+				return m.boards[i].Owner < m.boards[j].Owner
+			}
+			return m.boards[i].Number < m.boards[j].Number
+		})
+		m.boardsErr = ""
+		dir := msg.cycle
+		if m.pendingCycle != 0 {
+			dir = m.pendingCycle
+			m.pendingCycle = 0
+		}
+		if msg.openPicker || m.overlay == overlayBoards {
+			m.openBoardPicker()
+			return m, nil
+		}
+		if dir != 0 {
+			return m, m.cycleBoard(dir)
+		}
+		return m, nil
 	case detailMsg:
 		if msg.err != nil {
 			m.detailErr = msg.err.Error()

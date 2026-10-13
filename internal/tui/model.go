@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -33,6 +34,7 @@ const (
 	overlayAdd
 	overlayDiscard // discard dirty form?
 	overlayQuitDirty
+	overlayBoards // board picker (A6)
 )
 
 type paneKind int
@@ -106,6 +108,13 @@ type model struct {
 	quitting  bool
 	forceQuit bool
 
+	boards        []githubx.Project // all visible boards; nil until fetched (A6)
+	boardsLoading bool
+	boardsErr     string
+	pendingCycle  int // -1/+1 cycle waiting on the board list (A6)
+	boardIdx      int // picker selection
+	boardFilter   string
+
 	groupIdx       int
 	searchText     string
 	addText        string
@@ -118,11 +127,22 @@ type model struct {
 }
 
 type pageMsg struct {
-	fields []githubx.Field
-	items  []githubx.Item
-	next   string
-	err    error
-	first  bool
+	projectID string // stale-page guard (A6): ignored after a board switch
+	fields    []githubx.Field
+	items     []githubx.Item
+	next      string
+	err       error
+	first     bool
+}
+
+// boardsMsg delivers the lazily fetched board list (A6). cycle is the
+// pending [ / ] step (-1/+1) to apply on arrival, openPicker whether
+// the picker should open once the list is known.
+type boardsMsg struct {
+	projects   []githubx.Project
+	err        error
+	cycle      int
+	openPicker bool
 }
 
 type moveResultMsg struct {
@@ -382,13 +402,118 @@ func (m *model) loadPageCmd(cursor string) tea.Cmd {
 	svc, proj := m.svc, m.project
 	return func() tea.Msg {
 		if svc == nil || svc.Client == nil {
-			return pageMsg{err: fmt.Errorf("no GitHub client configured"), first: cursor == ""}
+			return pageMsg{projectID: proj.ID, err: fmt.Errorf("no GitHub client configured"), first: cursor == ""}
 		}
 		size := 100
 		if cursor == "" {
 			size = 50
 		}
 		fields, items, next, err := svc.Client.LoadBoardPage(m.ctx, proj.ID, cursor, size, "")
-		return pageMsg{fields: fields, items: items, next: next, err: err, first: cursor == ""}
+		return pageMsg{projectID: proj.ID, fields: fields, items: items, next: next, err: err, first: cursor == ""}
 	}
+}
+
+// loadBoardsCmd fetches every board the viewer can see, once (A6).
+func (m *model) loadBoardsCmd(cycle int, openPicker bool) tea.Cmd {
+	svc := m.svc
+	m.boardsLoading = true
+	return func() tea.Msg {
+		if svc == nil || svc.Client == nil {
+			return boardsMsg{err: fmt.Errorf("no GitHub client configured"), cycle: cycle, openPicker: openPicker}
+		}
+		projects, err := svc.ListProjects(context.Background(), "")
+		return boardsMsg{projects: projects, err: err, cycle: cycle, openPicker: openPicker}
+	}
+}
+
+// boardIndex returns the index of the current board in boards, or -1.
+func (m *model) boardIndex() int {
+	for i, p := range m.boards {
+		if p.ID == m.project.ID {
+			return i
+		}
+	}
+	return -1
+}
+
+// switchTo replaces the board in place (A6): a fresh model seeded from
+// the target's snapshot and per-board prefs, at the same window size,
+// keeping the loaded board list and the board/list view mode.
+func (m *model) switchTo(p githubx.Project) tea.Cmd {
+	if p.ID == m.project.ID {
+		m.overlay = overlayNone
+		return nil
+	}
+	boards := m.boards
+	w, h := m.width, m.height
+	nm := newModel(m.svc, p, RunOptions{StartInList: m.view == viewList})
+	*m = *nm
+	m.boards = boards
+	m.width, m.height = w, h
+	m.footer = "Board " + p.Ref() + " — " + p.Title
+	return m.Init()
+}
+
+// cycleBoard steps to the previous/next board, wrapping at the ends.
+func (m *model) cycleBoard(dir int) tea.Cmd {
+	idx := m.boardIndex()
+	if idx < 0 || len(m.boards) == 0 {
+		return nil
+	}
+	next := (idx + dir + len(m.boards)) % len(m.boards)
+	return m.switchTo(m.boards[next])
+}
+
+// requestBoards makes sure the board list is on its way (A6).
+func (m *model) requestBoards(cycle int, openPicker bool) tea.Cmd {
+	if m.boards != nil {
+		if openPicker {
+			m.openBoardPicker()
+			return nil
+		}
+		return m.cycleBoard(cycle)
+	}
+	if m.boardsLoading {
+		if cycle != 0 {
+			m.pendingCycle = cycle
+		}
+		return nil
+	}
+	m.footer = "Loading boards…"
+	return m.loadBoardsCmd(cycle, openPicker)
+}
+
+// openBoardPicker opens the picker with the current board selected.
+func (m *model) openBoardPicker() {
+	m.overlay = overlayBoards
+	m.boardFilter = ""
+	if idx := indexFiltered(m.filteredBoards(), m.project.ID); idx >= 0 {
+		m.boardIdx = idx
+	} else {
+		m.boardIdx = 0
+	}
+}
+
+// filteredBoards applies the picker filter to the board list.
+func (m *model) filteredBoards() []githubx.Project {
+	q := strings.ToLower(strings.TrimSpace(m.boardFilter))
+	if q == "" {
+		return m.boards
+	}
+	var out []githubx.Project
+	for _, p := range m.boards {
+		if strings.Contains(strings.ToLower(p.Ref()+" "+p.Title+" "+p.Owner), q) {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func indexFiltered(projects []githubx.Project, id string) int {
+	for i, p := range projects {
+		if p.ID == id {
+			return i
+		}
+	}
+	return -1
 }

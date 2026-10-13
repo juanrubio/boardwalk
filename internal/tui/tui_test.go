@@ -588,3 +588,68 @@ func TestEditorModalCursorAndArrows(t *testing.T) {
 		t.Fatalf("body arrow navigation failed, body:\n%s", body)
 	}
 }
+
+// (A6) Board switching: picker selection switches in place, [ / ]
+// cycle with wrap, the board list survives a switch, late pages for a
+// board already left are ignored, and the picker filters by text.
+func TestBoardPickerAndCycle(t *testing.T) {
+	m, fc := testModel(t, "fixture-user/1")
+	projects, err := fc.ListProjects(t.Context(), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mm, _ := m.Update(boardsMsg{projects: projects})
+	m = mm.(*model)
+	refs := []string{m.boards[0].Ref(), m.boards[1].Ref(), m.boards[2].Ref()}
+	if want := []string{"fixture-org/7", "fixture-user/1", "fixture-user/3"}; strings.Join(refs, ",") != strings.Join(want, ",") {
+		t.Fatalf("board order = %v, want %v", refs, want)
+	}
+
+	// Picker: opens, marks current, Down+Enter switches.
+	m = send(m, "P")
+	if m.overlay != overlayBoards {
+		t.Fatalf("P should open board picker, overlay=%v", m.overlay)
+	}
+	if v := m.View().Content; !strings.Contains(v, "Boards") || !strings.Contains(v, "• fixture-user/1") {
+		t.Fatalf("picker should mark current board:\n%s", v)
+	}
+	m = send(m, "down")
+	m = send(m, "enter")
+	if m.project.Ref() != "fixture-user/3" {
+		t.Fatalf("picker switch landed on %s, want fixture-user/3", m.project.Ref())
+	}
+	if len(m.boards) != 3 {
+		t.Fatal("board list must survive a switch")
+	}
+
+	// Cycle wraps at both ends.
+	m = send(m, "]")
+	if m.project.Ref() != "fixture-org/7" {
+		t.Fatalf("] from last should wrap to fixture-org/7, got %s", m.project.Ref())
+	}
+	m = send(m, "[")
+	if m.project.Ref() != "fixture-user/3" {
+		t.Fatalf("[ from first should wrap to fixture-user/3, got %s", m.project.Ref())
+	}
+
+	// Stale page for another board is ignored.
+	before := len(m.board.Items)
+	mm, _ = m.Update(pageMsg{projectID: "other-board", first: true, items: []githubx.Item{{ID: "zz"}}})
+	m = mm.(*model)
+	if len(m.board.Items) != before || m.project.Ref() != "fixture-user/3" {
+		t.Fatal("stale page for another board leaked into the current board")
+	}
+
+	// Picker filter narrows and Enter switches to the match.
+	m = send(m, "P")
+	for _, r := range "snazzy" {
+		m = send(m, string(r))
+	}
+	if got := m.filteredBoards(); len(got) != 1 || got[0].Ref() != "fixture-user/1" {
+		t.Fatalf("filter snazzy = %v", got)
+	}
+	m = send(m, "enter")
+	if m.project.Ref() != "fixture-user/1" {
+		t.Fatalf("filtered switch landed on %s, want fixture-user/1", m.project.Ref())
+	}
+}

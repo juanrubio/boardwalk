@@ -77,6 +77,8 @@ func (m *model) viewMain(w, h int) string {
 		body = m.overlayCenter(body, m.renderDeleteModal(w), w, bodyH)
 	case overlayGroup:
 		body = m.overlayCenter(body, m.renderGroupPicker(w), w, bodyH)
+	case overlayBoards:
+		body = m.overlayCenter(body, m.renderBoardPicker(w), w, bodyH)
 	}
 	// Overlay prompts (search/add) replace header line 2 handling via footer/header
 	lines := []string{header}
@@ -210,6 +212,8 @@ func (m *model) footerHint() string {
 		return "y confirm deletion · any other key cancels"
 	case overlayGroup:
 		return "↑↓ pick grouping · Enter apply · Esc cancel"
+	case overlayBoards:
+		return "↑↓ pick board · type to filter · Enter switch · Esc cancel"
 	case overlaySearch:
 		return "Enter keep filter · Esc clear filter"
 	case overlayAdd:
@@ -249,7 +253,7 @@ func (m *model) footerHint() string {
 	if m.view == viewList {
 		return "↑↓ row · Enter detail · H/L move · e edit · v kanban · / filter · q quit"
 	}
-	return "↑↓/jk card · ←→/hl column · H/L move · Enter detail · n draft · a add · / filter · d density · q quit"
+	return "↑↓/jk card · ←→/hl column · H/L move · Enter detail · n draft · a add · / filter · d density · P boards · q quit"
 }
 
 func (m *model) renderBoardArea(w, h int) string {

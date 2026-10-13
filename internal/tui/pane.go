@@ -313,6 +313,7 @@ func (m *model) renderHelp(w int) string {
 		"z collapse     d density     r refresh",
 		"o browser      y/Y copy      u undo move",
 		"D delete       x archive",
+		"P boards       [ ] prev/next board",
 		"? this help    q quit        Esc back",
 	}
 	var b strings.Builder
@@ -382,6 +383,56 @@ func (m *model) renderDeleteModal(w int) string {
 	b.WriteString("╭" + strings.Repeat("─", boxW-2) + "╮\n")
 	for _, l := range lines {
 		b.WriteString("│ " + padRight(truncateRunes(l, boxW-4), boxW-4) + " │\n")
+	}
+	b.WriteString("╰" + strings.Repeat("─", boxW-2) + "╯")
+	return b.String()
+}
+
+// renderBoardPicker is the A6 board switcher modal: filter line plus
+// the visible boards, current board marked •, selection with ▸.
+func (m *model) renderBoardPicker(w int) string {
+	boxW := min(w-4, 56)
+	inner := max(10, boxW-4)
+	var lines []string
+	lines = append(lines, "─ Boards "+strings.Repeat("─", max(0, inner-10)))
+	if m.boardFilter != "" {
+		lines = append(lines, "Filter: "+m.boardFilter)
+	}
+	switch {
+	case m.boardsLoading && m.boards == nil:
+		lines = append(lines, "Loading boards…")
+	case m.boardsErr != "":
+		lines = append(lines, "Failed: "+m.boardsErr)
+	default:
+		list := m.filteredBoards()
+		if len(list) == 0 {
+			lines = append(lines, "No boards match.")
+		}
+		// Window around the selection so long lists stay one screen.
+		start := 0
+		if m.boardIdx >= 10 {
+			start = m.boardIdx - 9
+		}
+		for i := start; i < len(list) && i < start+10; i++ {
+			p := list[i]
+			mark := "  "
+			if i == m.boardIdx {
+				mark = "▸ "
+			}
+			cur := "  "
+			if p.ID == m.project.ID {
+				cur = "• "
+			}
+			lines = append(lines, mark+cur+p.Ref()+" — "+p.Title)
+		}
+		if len(list) > 10 {
+			lines = append(lines, fmt.Sprintf("… %d boards (type to filter)", len(list)))
+		}
+	}
+	var b strings.Builder
+	b.WriteString("╭" + strings.Repeat("─", boxW-2) + "╮\n")
+	for _, l := range lines {
+		b.WriteString("│ " + padRight(truncateRunes(l, inner), inner) + " │\n")
 	}
 	b.WriteString("╰" + strings.Repeat("─", boxW-2) + "╯")
 	return b.String()

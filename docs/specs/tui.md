@@ -153,6 +153,24 @@ neighbours (performance.md §2), so the pane stays responsive.
 | `z` | *(A1)* Collapse/expand the focused column (§3) |
 | `d` | *(A1)* Toggle card density, comfortable/compact (§3) |
 | `r` | Refresh the board from GitHub |
+| `P` | *(A6)* Board picker: every board you can see, filterable |
+| `[` / `]` | *(A6)* Previous / next board (wraps around) |
+
+*(A6)* **Board switching (owner decision C).** `P` opens a centred
+picker listing every Projects v2 board the viewer can see (their own
+plus their organisations', the same set as CLI `project list`), with
+the current board marked `•`; typing filters by reference or title,
+`↑↓` moves, `Enter` switches, `Esc` cancels. `[` and `]` cycle to
+the previous/next board in the same list without the picker, wrapping
+at the ends, and the footer names the board landed on. The board list
+is fetched lazily on first use and cached for the session; switching
+never preloads other boards — the target board paints instantly from
+its snapshot (§5, ADR 0011) and streams live pages in, exactly like
+startup, and its per-board UI preferences are restored. Switching is
+a board-level action only: it is unavailable while a form, picker, or
+detail pane has the keys, so a dirty edit can never be bypassed (the
+§4 discard rule still applies on `Esc`). Pages arriving for a board
+you have already left are ignored.
 
 *(A1)* **Archive** shows a confirmation naming the item (reference,
 kind, title). It is applied only when the user presses `y` at that
@@ -716,3 +734,13 @@ build starts. The results are recorded as an amendment.
     preferred 36/31-cell widths, shrink-to-fit down to a 30/26-cell
     floor before any horizontal scrolling, with compact-style
     `…#<number>` reference shortening on shrunk comfortable cards.
+- **A5 (2026-10-13)** — owner decision B after screenshot review:
+  - §3: column identity colours — tinted header bands from the
+    column's GitHub option colour, card accent stripes and tinted
+    borders, focused card selection background (fixed to cover card
+    text, not only padding, after a follow-up screenshot).
+- **A6 (2026-10-13)** — owner decision C:
+  - §2: in-TUI board switching — `P` board picker (filterable, all
+    boards the viewer can see), `[`/`]` cycle with wrap, lazy list
+    fetch, snapshot-first switch, stale-page guard; board-level keys
+    only so dirty forms cannot be bypassed.
