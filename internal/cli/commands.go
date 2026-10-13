@@ -27,16 +27,19 @@ func newProjectCmd(opts *Options) *cobra.Command {
 		},
 	}
 	list.Flags().StringVar(&owner, "owner", "", "only projects owned by this user or organisation login")
+	var as string
 	use := &cobra.Command{
 		Use:   "use <ref>",
-		Short: "Save a project alias and/or make it the default",
+		Short: "Make a project the default, optionally saving an alias for it",
 		Example: `  boardwalk project use juanrubio/3
+  boardwalk project use juanrubio/3 --as life-board
   boardwalk project use https://github.com/users/juanrubio/projects/3`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runProjectUse(cmd.Context(), opts, args[0])
+			return runProjectUse(cmd.Context(), opts, args[0], as)
 		},
 	}
+	use.Flags().StringVar(&as, "as", "", "also save this alias name (lowercase letters, digits, hyphens) for the project")
 	cmd.AddCommand(list, use)
 	return cmd
 }

@@ -24,18 +24,6 @@ func unimplemented(opts *Options, what string) error {
 	return exiterr.Failuref("%s is not implemented yet in this build step", what)
 }
 
-func runProjectList(_ context.Context, opts *Options, _ string) error {
-	return unimplemented(opts, "project list")
-}
-
-func runProjectUse(_ context.Context, opts *Options, _ string) error {
-	return unimplemented(opts, "project use")
-}
-
-func runItemList(_ context.Context, opts *Options, _ listFilters) error {
-	return unimplemented(opts, "item list")
-}
-
 func runItemAdd(_ context.Context, opts *Options, _ string, _ bool, _, _ string) error {
 	return unimplemented(opts, "item add")
 }
