@@ -1,0 +1,374 @@
+{
+ "Project": {
+  "ID": "PVT_fixture_3",
+  "Number": 3,
+  "Title": "Life Board (fixture)",
+  "Owner": "fixture-user",
+  "OwnerKind": "user",
+  "URL": "https://github.com/users/fixture-user/projects/3",
+  "ItemsTotal": 16
+ },
+ "Fields": [
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz7U",
+   "Name": "Title",
+   "DataType": "TITLE"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz7Y",
+   "Name": "Assignees",
+   "DataType": "ASSIGNEES"
+  },
+  {
+   "ID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+   "Name": "Status",
+   "DataType": "SINGLE_SELECT",
+   "Options": [
+    {
+     "ID": "f75ad846",
+     "Name": "Todo",
+     "Color": "GREEN",
+     "Description": "This item hasn't been started"
+    },
+    {
+     "ID": "47fc9ee4",
+     "Name": "In Progress",
+     "Color": "YELLOW",
+     "Description": "This is actively being worked on"
+    },
+    {
+     "ID": "98236657",
+     "Name": "Done",
+     "Color": "PURPLE",
+     "Description": "This has been completed"
+    }
+   ]
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz7g",
+   "Name": "Labels",
+   "DataType": "LABELS"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz7k",
+   "Name": "Linked pull requests",
+   "DataType": "LINKED_PULL_REQUESTS"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz7o",
+   "Name": "Milestone",
+   "DataType": "MILESTONE"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz7s",
+   "Name": "Repository",
+   "DataType": "REPOSITORY"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz7w",
+   "Name": "Reviewers",
+   "DataType": "REVIEWERS"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz70",
+   "Name": "Parent issue",
+   "DataType": "PARENT_ISSUE"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6Pzg9qz74",
+   "Name": "Sub-issues progress",
+   "DataType": "SUB_ISSUES_PROGRESS"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6PzhPqV1A",
+   "Name": "Created",
+   "DataType": "CREATED"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6PzhPqV1Q",
+   "Name": "Updated",
+   "DataType": "UPDATED"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL6PzhPqV1Y",
+   "Name": "Closed",
+   "DataType": "CLOSED"
+  }
+ ],
+ "Items": [
+  {
+   "ID": "PVTI_fixture_1",
+   "DatabaseID": 900001,
+   "Kind": "draft",
+   "Title": "Fixture draft item 01",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_2",
+   "DatabaseID": 900002,
+   "Kind": "issue",
+   "Title": "Fixture issue item 02",
+   "Archived": false,
+   "Repo": "fixture/repo",
+   "Number": 6,
+   "URL": "https://github.com/fixture/repo/issues/6",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_3",
+   "DatabaseID": 900003,
+   "Kind": "draft",
+   "Title": "Fixture draft item 03",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_4",
+   "DatabaseID": 900004,
+   "Kind": "draft",
+   "Title": "Fixture draft item 04",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_5",
+   "DatabaseID": 900005,
+   "Kind": "draft",
+   "Title": "Fixture draft item 05",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_6",
+   "DatabaseID": 900006,
+   "Kind": "draft",
+   "Title": "Fixture draft item 06",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_7",
+   "DatabaseID": 900007,
+   "Kind": "draft",
+   "Title": "Fixture draft item 07",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_8",
+   "DatabaseID": 900008,
+   "Kind": "draft",
+   "Title": "Fixture draft item 08",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_9",
+   "DatabaseID": 900009,
+   "Kind": "draft",
+   "Title": "Fixture draft item 09",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_10",
+   "DatabaseID": 900010,
+   "Kind": "issue",
+   "Title": "Fixture issue item 10",
+   "Archived": false,
+   "Repo": "fixture/repo",
+   "Number": 12,
+   "URL": "https://github.com/fixture/repo/issues/12",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_11",
+   "DatabaseID": 900011,
+   "Kind": "draft",
+   "Title": "Fixture draft item 11",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "47fc9ee4",
+     "OptionName": "In Progress"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_12",
+   "DatabaseID": 900012,
+   "Kind": "issue",
+   "Title": "Fixture issue item 12",
+   "Archived": false,
+   "Repo": "fixture/repo",
+   "Number": 17,
+   "URL": "https://github.com/fixture/repo/issues/17",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "47fc9ee4",
+     "OptionName": "In Progress"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_13",
+   "DatabaseID": 900013,
+   "Kind": "issue",
+   "Title": "Fixture issue item 13",
+   "Archived": false,
+   "Repo": "fixture/repo",
+   "Number": 18,
+   "URL": "https://github.com/fixture/repo/issues/18",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "47fc9ee4",
+     "OptionName": "In Progress"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_14",
+   "DatabaseID": 900014,
+   "Kind": "draft",
+   "Title": "Fixture draft item 14",
+   "Archived": false,
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "f75ad846",
+     "OptionName": "Todo"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_15",
+   "DatabaseID": 900015,
+   "Kind": "issue",
+   "Title": "Fixture issue item 15",
+   "Archived": false,
+   "Repo": "fixture/repo",
+   "Number": 16,
+   "URL": "https://github.com/fixture/repo/issues/16",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "f75ad846",
+     "OptionName": "Todo"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_fixture_16",
+   "DatabaseID": 900016,
+   "Kind": "issue",
+   "Title": "Fixture issue item 16",
+   "Archived": false,
+   "Repo": "fixture/repo",
+   "Number": 19,
+   "URL": "https://github.com/fixture/repo/issues/19",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL6Pzg9qz7c",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "f75ad846",
+     "OptionName": "Todo"
+    }
+   ]
+  }
+ ]
+}

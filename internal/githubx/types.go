@@ -50,6 +50,16 @@ type Field struct {
 	Iterations []Iteration // ITERATION only (current + upcoming)
 }
 
+// FieldByID returns the field with this node ID, if present.
+func FieldByID(fields []Field, id string) (Field, bool) {
+	for _, f := range fields {
+		if f.ID == id {
+			return f, true
+		}
+	}
+	return Field{}, false
+}
+
 // OptionByName returns the named option, if present.
 func (f Field) OptionByName(name string) (Option, bool) {
 	for _, o := range f.Options {
