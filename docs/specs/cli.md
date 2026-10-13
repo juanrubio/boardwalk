@@ -1,0 +1,201 @@
+# Boardwalk CLI specification
+
+**Status:** Final
+**Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
+**Date:** 2026-10-13
+**Scope:** The noun-first command surface (`project`, `item`, `board`)
+from [ADR 0003](../decisions/0003-command-grammar-noun-first.md)
+(Final), on Cobra ([ADR 0007](../decisions/0007-go-stack-cobra-charm.md),
+Final), with the JSON/error contract of
+[ADR 0009](../decisions/0009-json-error-contract-bare.md) (Final).
+Decisions are recorded here as they settle in the decision interview;
+unresolved sections stay visibly marked. The TUI has its own
+specification ([tui.md](tui.md), Final).
+
+## 1. Item references (settled 2026-10-13)
+
+Commands that act on an existing item (`item edit`, `item move`, and
+their successors) take one item reference. A reference is resolved
+**within the selected project only** (ADR 0005 resolution order) and
+accepts these forms:
+
+1. **Linked-item reference:** `owner/repo#number` for a linked issue or
+   pull request (for example `juanrubio/snazzyemail#42`, PRD §7).
+2. **Item URL:** the GitHub URL of the issue/PR, or of the project item
+   where GitHub exposes one.
+3. **Item ID:** the item's node ID in full, or the short ID displayed
+   for it (below). This is the only universal form — drafts have no
+   `owner/repo#number`.
+4. **Exact title:** the item's exact title, as a convenience form. It
+   counts only when it matches exactly one item in the project.
+
+Display rule: every list, board, and detail rendering shows the
+reference a user can copy back into a command — the
+`owner/repo#number` for linked items, and for drafts a short ID of the
+form `draft:<prefix>`, where `<prefix>` is the shortest prefix of the
+item's node ID (at least 8 characters) that is unambiguous within the
+project. Full node IDs are shown in `--json` output and item detail.
+
+Resolution rules:
+
+- No match: exit 4 (not found, ADR 0009) naming the reference and the
+  project searched. An `owner/repo#number` that exists on GitHub but
+  is **not on the selected project** is also not-found here — edit/move
+  commands never implicitly add items; adding is `item add`'s job.
+- More than one match (possible for titles and short-ID prefixes):
+  exit 2 (usage) listing each candidate's reference, kind, and title,
+  and **change nothing**. Ambiguity never guesses, including for
+  mutations.
+- Title matching is exact and case-sensitive; partial titles are
+  search (`item list --search` / TUI `/`), never references.
+- References are stable across sessions for linked items; node IDs are
+  stable for all items. Row numbers or screen positions are never
+  references.
+
+`item add` takes the same linked-item forms (1–2) for the thing being
+added, or `--draft --title …` for a new draft (PRD §7); it never takes
+a title reference for an existing item.
+
+Rejected for this section: node IDs only (precise but untypeable,
+forcing list-copy-paste for every edit) and row numbers from a prior
+listing (meaning rots as soon as the board or filter changes — unsafe
+for mutations).
+
+## 2. Verb and flag inventory (settled 2026-10-13)
+
+The MVP surface is deliberately small. `move` is the only
+special-cased verb; every other field change goes through the generic
+`edit --field` mechanism (PRD §7).
+
+### `project`
+
+| Command | Behaviour |
+|---|---|
+| `boardwalk project list [--owner <login>]` | List accessible Projects v2 (user- and org-owned), showing number, title, owner, item count, and which alias/default each matches. |
+| `boardwalk project use <ref>` | Resolve `<ref>` (alias, URL, or owner/number), save it as an alias and/or default in user config (ADR 0005/0008) after confirmation of what will be written. |
+
+### `item`
+
+| Command | Behaviour |
+|---|---|
+| `boardwalk item list` | Table of the selected project's items in the TUI list-view row model (tui.md §6): reference (§1), title, kind, repository, grouping/status value, assignee, then salient fields. Filters: `--status <option>`, `--assignee <login\|@me>`, `--repo <owner/repo>`, `--type <issue\|pr\|draft>`, `--search <text>`. Pagination is transparent (PRD §6.2); ordering matches the TUI list (grouping order, then board order). |
+| `boardwalk item add <issue/PR ref>` | Add an existing issue/PR (§1 forms 1–2) to the selected project. Previews the resolved item, then adds and prints the resulting item reference, ID, and link (PRD §8 flow B). Already-present items are reported, not duplicated. |
+| `boardwalk item add --draft --title <t> [--body <b>]` | Create a draft item. Title is required and non-empty. |
+| `boardwalk item edit <ref> [--title <t>] [--body <b>] [--field "Name=Value"]…` | Edit title/body where GitHub permits, and set project fields via repeatable `--field`. Field names and values validate against the live schema before any mutation; unknown fields, unknown single-select options, and invalid date/number values fail with exit 2 and the valid choices listed. Interactive use shows the same change summary (`Field: old → new`) and confirmation as the TUI (tui.md §4); `--dry-run` prints that summary without applying (ADR 0009). |
+| `boardwalk item move <ref> --to <option>` | Set the item's grouping/Status single-select field (tui.md §1 selection rule) to `<option>`. The option validates against that field's live options; an invalid option fails with exit 2 listing the valid options. Prints `Field: old → new`. This verb exists because moving is the most common board action; it must behave exactly as `item edit --field "<GroupingField>=<option>"` would, with no divergent semantics. |
+| `boardwalk item archive <ref>` | Archive the item (the MVP's only destructive verb). Requires explicit confirmation interactively; scripts must pass `--yes`. There is no `item remove`/`delete` in the MVP. |
+
+### `board`
+
+| Command | Behaviour |
+|---|---|
+| `boardwalk board [--project <ref>] [--list]` | Open the TUI (tui.md) for the selected project; `--list` starts in list view instead of kanban where the project permits both. |
+
+### Rules applying to the whole inventory
+
+- Every mutation previews its effect interactively and honours
+  `--dry-run` (print the plan, change nothing) and `--yes` (skip the
+  confirmation the user explicitly opted out of) per ADR 0009 and
+  tui.md §4. `--yes` never bypasses validation or ambiguity checks
+  (§1).
+- No other verbs exist in the MVP. In particular there are no
+  `item assign` / `item close` / `item remove` verbs: assignees and
+  state are fields/items concerns handled through `edit --field` where
+  the API permits, and closing an issue/PR itself is GitHub Issues
+  territory, out of scope (PRD §6).
+- New verbs require usage evidence and a spec amendment; aliases for
+  the verbs above follow ADR 0003 (deferred until usage earns them).
+
+Rejected for this section: omitting `move` (the most frequent action
+would pay full generic `--field` syntax every time, asymmetric with
+the TUI's `H`/`L`) and a wider day-one verb set (`remove`, `assign`,
+`close`, …) that grows the surface — including its destructive-safety
+design — before any usage data justifies it.
+
+## 3. Global flags and script behaviour (settled 2026-10-13)
+
+Four flags are **persistent globals**, accepted on every command
+(Cobra persistent flags; position-independent for the user, so
+`boardwalk item list --json` and `boardwalk --json item list` behave
+identically):
+
+| Flag | Meaning |
+|---|---|
+| `--project <ref>` | Select the project (alias, URL, or owner/number), overriding `BOARDWALK_PROJECT` and the saved default (ADR 0005). |
+| `--json` | Bare JSON on stdout, JSON error object on stderr (ADR 0009). |
+| `--dry-run` | Print the planned mutation/change summary; change nothing. Valid on every mutation; harmless elsewhere. |
+| `--yes` | Skip interactive confirmation for a mutation the user has explicitly authorised. Never skips validation or ambiguity checks (§1). |
+
+Script-safety rules:
+
+- Confirmation prompts are shown **only on a real terminal**. When
+  stdin/stdout is not a terminal, a mutation without `--yes` prints
+  its change summary and refuses with **exit 2**, naming both escapes:
+  `--yes` to proceed, `--dry-run` to preview. It must never block
+  reading input that cannot arrive, and never proceed unconfirmed.
+- `--dry-run` takes precedence over `--yes` if both are passed:
+  nothing is applied, and the output says the run was a dry run.
+- Non-mutating commands never prompt; in scripts they simply work,
+  with decoration off when piped (ADR 0009).
+- There is **no `--non-interactive` flag**: TTY detection plus
+  `--yes`/`--dry-run` already express script behaviour, and a second
+  overlapping mechanism would eventually disagree with them.
+- Standard Cobra behaviour applies everywhere else: `--help` on every
+  command and subcommand, and shell completion for bash, zsh, fish,
+  and PowerShell (PRD §7).
+
+Rejected for this section: per-command flag definitions (scripts would
+have to memorise which commands accept `--json`/`--project`, and the
+surface would drift) and an explicit `--non-interactive` mode
+(redundant with TTY detection plus `--yes`/`--dry-run`).
+
+## 4. Help and completion validation (settled 2026-10-13)
+
+Help and shell completion are part of the shipped surface, and they
+are validated like code — this is the PRD §7 usability requirement
+made concrete. The MVP is not ready until both halves pass.
+
+### Human task check (release gate)
+
+- **Participants:** the owner plus two or three target users (people
+  who use GitHub Projects from the terminal). Not the implementer
+  alone.
+- **Tasks** (against the ADR 0004 fixture boards, using only
+  `--help`, completion, and the TUI's `?`/footer — no other docs, no
+  coaching):
+  1. First run: select a project and save it as the default.
+  2. Add an existing issue to the project.
+  3. Move an item to another status/column from the CLI.
+  4. Edit a non-status field (for example Priority) from the CLI.
+  5. In the TUI: find an item by search, open it, and move it with
+     `H`/`L`.
+- **Gate:** every participant completes every task without outside
+  help. A stumble is logged as a wording/grammar/help bug against this
+  specification and fixed; it is never recorded as user error. Fixes
+  that change command grammar require amending §2 and re-running the
+  affected task.
+- Timing is observed (the PRD §5 five-minute first-run measure uses
+  task 1) but completion without help is the pass/fail line.
+
+### Automated checks (every change)
+
+- Every example shown in any `--help` output is executed in tests
+  against the ADR 0004 fixtures and must succeed with the documented
+  exit code (ADR 0009). Help text is generated from the same command
+  definitions that run, so examples cannot drift from behaviour.
+- Generated shell completions for bash, zsh, fish, and PowerShell are
+  smoke-tested (they install and complete the §2 verbs, §1 references
+  where dynamic completion is offered, and the §3 global flags).
+- `--help` for every command states its purpose, its reference/flag
+  syntax, at least one example, and its applicable exit codes.
+
+Rejected for this section: automated checks only, with human
+usability deferred to post-release feedback (the first grammar test
+would happen on users who never volunteered), and deferring
+validation entirely (quietly deletes PRD §7).
+
+## Specification status
+
+All sections of this specification were settled in the decision
+interview and accepted as **Final** by the owner on 2026-10-13.
+Changes from here require a spec amendment, not a silent edit.

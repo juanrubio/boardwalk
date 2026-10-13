@@ -156,12 +156,12 @@ Provide help, shell completion, and a non-interactive mode suitable for scripts.
 
 ## 13. Open questions
 
-1. Which implementation language best fits the existing gh workflow and desired TUI: Go, Rust, or TypeScript?
-2. Should the MVP use gh api graphql as a subprocess, or a language-level GitHub client authenticated through gh?
-3. What command grammar feels most natural: boardwalk item, boardwalk issue, or shorter aliases?
-4. Which projects and custom fields should be the first real-world acceptance fixtures?
-5. Should aliases live only in user config, or also support repository-local config?
-6. How much of the TUI belongs in MVP versus a fast table/list first?
+1. ~~Which implementation language best fits the existing gh workflow and desired TUI: Go, Rust, or TypeScript?~~ **Resolved: Go** — see [ADR 0001](docs/decisions/0001-implementation-language-go.md) (Final).
+2. ~~Should the MVP use gh api graphql as a subprocess, or a language-level GitHub client authenticated through gh?~~ **Resolved: language-level Go client via `cli/go-gh`** — see [ADR 0002](docs/decisions/0002-github-api-access-go-gh.md) (Final).
+3. ~~What command grammar feels most natural: boardwalk item, boardwalk issue, or shorter aliases?~~ **Resolved: noun-first (`item`, `project`, `board`), no short aliases in v1** — see [ADR 0003](docs/decisions/0003-command-grammar-noun-first.md) (Final).
+4. ~~Which projects and custom fields should be the first real-world acceptance fixtures?~~ **Resolved: three-board set (rich-fields, differing-schema, synthetic 100+), captured for offline tests; slots are `juanrubio/1` SnazzyEmail and `juanrubio/3` Life Board** — see [ADR 0004](docs/decisions/0004-acceptance-fixtures-three-boards.md) (Final).
+5. ~~Should aliases live only in user config, or also support repository-local config?~~ **Resolved: user config only for MVP; resolution order flag → `BOARDWALK_PROJECT` → saved default** — see [ADR 0005](docs/decisions/0005-alias-config-user-only.md) (Final).
+6. ~~How much of the TUI belongs in MVP versus a fast table/list first?~~ **Resolved: full item management in the TUI for the MVP (browse, detail, create, edit, move), CLI fully capable in parallel** — see [ADR 0006](docs/decisions/0006-tui-scope-full-in-mvp.md) (Final).
 
 ## 14. Initial release definition
 
