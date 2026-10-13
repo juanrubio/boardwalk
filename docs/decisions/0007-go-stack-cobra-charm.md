@@ -1,7 +1,9 @@
 # ADR 0007 — Go stack: Cobra + Charm (Bubble Tea, Lip Gloss, Bubbles)
 
-**Status:** Final
+**Status:** Final — amended by A1 (2026-10-13)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
+**Amended:** 2026-10-13 — A1, owner approval of the
+[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md)
 **Date:** 2026-10-13
 **Deciders:** Project owner (accepted option A in decision interview, 2026-10-13)
 **Depends on:** [ADR 0001](0001-implementation-language-go.md) (Final), [ADR 0003](0003-command-grammar-noun-first.md) (Final), [ADR 0006](0006-tui-scope-full-in-mvp.md) (Final)
@@ -21,13 +23,17 @@ Build on:
 
 - **Cobra** — command tree for the noun-first grammar (ADR 0003), flags,
   help generation, and shell completion (PRD §7).
-- **Bubble Tea** — the TUI application model (Elm-style update/view) for
-  `boardwalk board`.
-- **Lip Gloss** — all TUI/CLI styling: layout, borders, colour, and
-  adaptive (light/dark, colour-profile-aware) styles.
-- **Bubbles** — reusable components (list, text input, textarea,
-  spinner, paginator, viewport, help/key bindings) wherever they fit;
-  Boardwalk-specific kanban components are built on Bubble Tea/Lip Gloss
+- **Bubble Tea v2** *(A1)* — the TUI application model (Elm-style update/view)
+  for `boardwalk board`, using the cell-diffing renderer, frame-rate controls,
+  and explicit background querying (`tea.BackgroundColorMsg`).
+- **Lip Gloss v2** *(A1)* — all TUI/CLI styling: layout, borders, colour,
+  canvas/layer compositing, and adaptive styles.
+- **Bubbles + Huh** *(A1)* — reusable components (list, text input, textarea,
+  spinner, viewport, key bindings) plus **Huh** for shared interactive
+  prompts in the CLI (cli.md §5).
+- **Glamour** *(A1)* — styled Markdown rendering for issue/PR bodies,
+  rendered off the main UI loop and cached per item/theme (tui.md §3).
+- Boardwalk-specific kanban components are built on Bubble Tea/Lip Gloss
   rather than forking Bubbles.
 
 Constraints:
@@ -71,20 +77,19 @@ Constraints:
 - The project takes maintained dependencies on Cobra, Bubble Tea,
   Lip Gloss, and Bubbles (plus `go-gh` per ADR 0002) and must track their
   releases; major-version Charm changes are the expected upgrade cost.
-- Kanban components (columns, cards, drag/move interaction, detail
-  panel) are Boardwalk code and Boardwalk's testing responsibility,
+- Kanban components (columns, cards, keyboard move interaction
+  *(A1: mouse drag-and-drop is out of MVP, tui.md §2)*, detail panel)
+  are Boardwalk code and Boardwalk's testing responsibility,
   exercised keyboard-only against the ADR 0004 fixtures.
 - If a needed interaction proves impossible or unacceptably awkward in
   Bubble Tea, the fallback is a Boardwalk-built component on the same
   model — not a second TUI toolkit alongside it.
 
-## Unresolved
+## Amendment log
 
-- TUI design — **settled** in the
-  [TUI specification](../specs/tui.md) (Final), all sections.
-- Config format — **resolved:** TOML, see
-  [ADR 0008](0008-config-format-toml.md) (Final).
-- JSON/error contract — **resolved:** bare JSON plus documented exit
-  codes, see [ADR 0009](0009-json-error-contract-bare.md) (Final).
-- Auth scopes/remediation — **resolved:** see
-  [ADR 0010](0010-auth-scopes-upfront.md) (Final).
+- **A1 (2026-10-13)** — owner approval of the
+  [beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md):
+  Adopted Bubble Tea v2 and Lip Gloss v2 from the start to take advantage of
+  cell-diffing rendering, explicit background query, and layer compositing;
+  added Huh for CLI interactive prompts and Glamour for off-loop Markdown
+  rendering; clarified that move interaction is keyboard-only (no mouse drag-and-drop).

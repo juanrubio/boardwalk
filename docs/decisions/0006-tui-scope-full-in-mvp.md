@@ -1,7 +1,9 @@
 # ADR 0006 — TUI scope: full item management in the MVP
 
-**Status:** Final
+**Status:** Final — amended by A1 (2026-10-13)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
+**Amended:** 2026-10-13 — A1, owner approval of the
+[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md)
 **Date:** 2026-10-13
 **Deciders:** Project owner (accepted option B in decision interview, 2026-10-13)
 **Depends on:** [ADR 0001](0001-implementation-language-go.md) (Final), [ADR 0003](0003-command-grammar-noun-first.md) (Final), [ADR 0004](0004-acceptance-fixtures-three-boards.md) (Final)
@@ -36,11 +38,11 @@ dropping to the CLI:
 - Edit title/body and set project fields (single-select, date, number,
   text, iteration, people where the API allows) from the detail panel,
   with values validated before mutation (PRD §6.4, §9).
-- Move items between columns, with pending changes shown and applied on
-  confirmation, optimistic feedback, and a clear conflict/error report
-  (PRD §8 flow C).
-- Archive/remove only with explicit confirmation, as in the CLI
-  (PRD §6.5).
+- Move items between columns with instant optimistic feedback
+  and error rollback (tui.md §2) *(A1: single-field moves are instant,
+  never requiring a confirmation step; multi-field edits require confirmation)*.
+- Archive items with explicit confirmation (PRD §6.5, cli.md §2)
+  *(A1: Boardwalk supports archive; item deletion/removal is not in MVP)*.
 - Keyboard-only operation throughout, usable at typical terminal widths,
   never conveying status by colour alone (PRD §9, §10).
 
@@ -89,10 +91,10 @@ management, not project administration.
 - TUI design — **settled** in the
   [TUI specification](../specs/tui.md) (Final), all sections
   (§1–§6, 2026-10-13).
-- Go CLI/TUI libraries — **resolved:** Cobra + Charm, see
-  [ADR 0007](0007-go-stack-cobra-charm.md) (Final).
-- Config format and JSON/error contract — **resolved:** see
-  [ADR 0008](0008-config-format-toml.md) and
-  [ADR 0009](0009-json-error-contract-bare.md) (both Final).
-- Auth scopes — **resolved:** see [ADR 0010](0010-auth-scopes-upfront.md)
-  (Final). All ADR-level decisions are now settled.
+## Amendment log
+
+- **A1 (2026-10-13)** — owner approval of the
+  [beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md):
+  Reconciled move interaction to match tui.md §2 (instant single-field move without
+  confirmation prompt, rollback on failure) and clarified archive scope (deletion/removal
+  is out of MVP, cli.md §2).

@@ -1,7 +1,9 @@
 # ADR 0010 — Auth scopes: require `project` + `repo` up front
 
-**Status:** Final
+**Status:** Final — amended by A1 (2026-10-13)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
+**Amended:** 2026-10-13 — A1, owner approval of the
+[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md)
 **Date:** 2026-10-13
 **Deciders:** Project owner (accepted option B in decision interview, 2026-10-13)
 **Depends on:** [ADR 0002](0002-github-api-access-go-gh.md) (Final), [ADR 0009](0009-json-error-contract-bare.md) (Final)
@@ -42,6 +44,15 @@ gh auth refresh -s project,repo
 (plus `gh auth login` guidance when `gh` is missing or unauthenticated).
 Boardwalk only *prints* this command; it never runs it, and never
 requests, receives, or stores credentials itself (PRD §8, ADR 0002).
+
+*(A1)* **Performance constraint (no dedicated auth round trip):**
+Boardwalk resolves the auth token once per process from `gh`'s credential
+store without spawning repeated subprocesses. It does **not** make an
+independent network request just to verify scopes before doing work.
+Instead, scopes are inspected from the `X-OAuth-Scopes` header returned
+by the first real GraphQL request (or verified via local token inspection
+where supported). If scopes are insufficient, the command stops with exit
+code 3 and the remediation above.
 
 Purely local operations that touch no GitHub data (for example showing
 the config path or how aliases resolve locally) are not gated.
@@ -90,8 +101,11 @@ with a permission message, not a scope message (ADR 0009, PRD §12).
   the operation and classifies a scope-style failure as exit 3 with the
   same remediation text.
 
-## Unresolved
+## Amendment log
 
-- TUI design continues in the [TUI specification](../specs/tui.md)
-  (Final). This ADR was the last dependent *contract* detail; all
-  ADR-level decisions are now settled.
+- **A1 (2026-10-13)** — owner approval of the
+  [beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md):
+  Specified that scope verification must not introduce a standalone network
+  round trip; scopes are inspected via `X-OAuth-Scopes` on the first real
+  request or via local token inspection, preserving performance budgets
+  ([performance.md](../specs/performance.md) §2).

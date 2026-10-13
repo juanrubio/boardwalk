@@ -135,7 +135,7 @@ Provide help, shell completion, and a non-interactive mode suitable for scripts.
 
 - **Security:** rely on gh's credential store; redact tokens and sensitive request data from logs.
 - **Reliability:** retry transient read failures with bounded backoff; do not silently retry a mutation that may already have succeeded.
-- **Performance:** show progress for network operations; avoid repeated full-board requests for a single field update.
+- **Performance:** show progress for network operations; avoid repeated full-board requests for a single field update. Specific latency, round-trip limits, and rendering budgets are defined in [performance.md](docs/specs/performance.md) (Amendment 1). Local caching and snapshot rules are defined in [ADR 0011](docs/decisions/0011-local-cache-and-snapshot.md).
 - **Compatibility:** document supported OSes and minimum GitHub CLI version once the implementation stack is chosen.
 - **Accessibility:** use sensible contrast, never convey status by color alone, support keyboard navigation, and provide a plain-list fallback.
 
@@ -166,3 +166,5 @@ Provide help, shell completion, and a non-interactive mode suitable for scripts.
 ## 14. Initial release definition
 
 The MVP is ready when a user can authenticate through gh, discover/select a Projects v2 board, view and filter its items in CLI and TUI, add an issue/PR or draft item, update common fields/status, and do all of that without opening a browser—while receiving clear previews, errors, and safe handling of destructive operations.
+
+*(A1)* In addition, the MVP must pass the visual acceptance requirements ([tui.md §7](docs/specs/tui.md), golden tests and VHS verification) and adhere to the performance budgets ([performance.md](docs/specs/performance.md) B1–B9) tested offline across all three fixture tiers.

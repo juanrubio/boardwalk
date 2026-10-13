@@ -1,7 +1,10 @@
 # Boardwalk CLI specification
 
-**Status:** Final
+**Status:** Final — amended by A1 (2026-10-13)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
+**Amended:** 2026-10-13 — A1, owner approval of the
+[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md).
+Amended passages are marked *(A1)*; see the amendment log at the end.
 **Date:** 2026-10-13
 **Scope:** The noun-first command surface (`project`, `item`, `board`)
 from [ADR 0003](../decisions/0003-command-grammar-noun-first.md)
@@ -32,9 +35,13 @@ accepts these forms:
 Display rule: every list, board, and detail rendering shows the
 reference a user can copy back into a command — the
 `owner/repo#number` for linked items, and for drafts a short ID of the
-form `draft:<prefix>`, where `<prefix>` is the shortest prefix of the
-item's node ID (at least 8 characters) that is unambiguous within the
-project. Full node IDs are shown in `--json` output and item detail.
+form `draft:<id>`. *(A1)* `<id>` is the project item's numeric
+`databaseId` (for example `draft:91234567`). It is short, typeable, and
+**stable for the item's lifetime**. It replaces the earlier "shortest
+unambiguous node-ID prefix" rule, which could not work: Projects v2
+node IDs share a long common prefix, and the shortest unique prefix
+changes as items are added. Full node IDs are shown in `--json` output
+and item detail.
 
 Resolution rules:
 
@@ -42,15 +49,26 @@ Resolution rules:
   project searched. An `owner/repo#number` that exists on GitHub but
   is **not on the selected project** is also not-found here — edit/move
   commands never implicitly add items; adding is `item add`'s job.
-- More than one match (possible for titles and short-ID prefixes):
+- More than one match (possible for titles *(A1: short IDs are now
+  exact, so they cannot be ambiguous)*):
   exit 2 (usage) listing each candidate's reference, kind, and title,
   and **change nothing**. Ambiguity never guesses, including for
   mutations.
 - Title matching is exact and case-sensitive; partial titles are
   search (`item list --search` / TUI `/`), never references.
-- References are stable across sessions for linked items; node IDs are
-  stable for all items. Row numbers or screen positions are never
-  references.
+- References are stable across sessions for linked items; node IDs
+  *(A1)* and `draft:<databaseId>` short IDs are stable for all items.
+  Row numbers or screen positions are never references.
+- *(A1)* **Resolution cost** (performance.md §2):
+  - Forms 1–2 resolve from the issue/PR side, through its
+    `projectItems` filtered to the selected project. That is one
+    request, whatever the board size.
+  - Item IDs resolve with a direct node lookup. `draft:<id>` resolves
+    through the cached `databaseId` → node ID map (ADR 0011), with a
+    board scan only on a cache miss.
+  - Exact titles are the only form that always needs the item list.
+    They use the server-side item query where it can narrow the result.
+    The command documents that this form is slower on large boards.
 
 `item add` takes the same linked-item forms (1–2) for the thing being
 added, or `--draft --title …` for a new draft (PRD §7); it never takes
@@ -78,11 +96,11 @@ special-cased verb; every other field change goes through the generic
 
 | Command | Behaviour |
 |---|---|
-| `boardwalk item list` | Table of the selected project's items in the TUI list-view row model (tui.md §6): reference (§1), title, kind, repository, grouping/status value, assignee, then salient fields. Filters: `--status <option>`, `--assignee <login\|@me>`, `--repo <owner/repo>`, `--type <issue\|pr\|draft>`, `--search <text>`. Pagination is transparent (PRD §6.2); ordering matches the TUI list (grouping order, then board order). |
+| `boardwalk item list` | Table of the selected project's items in the TUI list-view row model (tui.md §6): reference (§1), title, kind, repository, grouping/status value, assignee, then salient fields. Filters: `--status <option>`, `--assignee <login\|@me>`, `--repo <owner/repo>`, `--type <issue\|pr\|draft>`, `--search <text>`. Pagination is transparent (PRD §6.2); ordering matches the TUI list (grouping order, then board order). *(A1)* `--status` filters on the project's **default board field** (defined below), never on the TUI grouping preference. `--search` accepts free text plus **GitHub's project filter syntax** (for example `assignee:@me is:draft "label:needs triage"`), the same language as the TUI `/` (tui.md §2). All filters are combined into one query. Whatever GitHub can evaluate is sent as the server-side item query, so only matching items are downloaded (performance.md B9). The rest is filtered locally, with identical results. |
 | `boardwalk item add <issue/PR ref>` | Add an existing issue/PR (§1 forms 1–2) to the selected project. Previews the resolved item, then adds and prints the resulting item reference, ID, and link (PRD §8 flow B). Already-present items are reported, not duplicated. |
-| `boardwalk item add --draft --title <t> [--body <b>]` | Create a draft item. Title is required and non-empty. |
-| `boardwalk item edit <ref> [--title <t>] [--body <b>] [--field "Name=Value"]…` | Edit title/body where GitHub permits, and set project fields via repeatable `--field`. Field names and values validate against the live schema before any mutation; unknown fields, unknown single-select options, and invalid date/number values fail with exit 2 and the valid choices listed. Interactive use shows the same change summary (`Field: old → new`) and confirmation as the TUI (tui.md §4); `--dry-run` prints that summary without applying (ADR 0009). |
-| `boardwalk item move <ref> --to <option>` | Set the item's grouping/Status single-select field (tui.md §1 selection rule) to `<option>`. The option validates against that field's live options; an invalid option fails with exit 2 listing the valid options. Prints `Field: old → new`. This verb exists because moving is the most common board action; it must behave exactly as `item edit --field "<GroupingField>=<option>"` would, with no divergent semantics. |
+| `boardwalk item add --draft --title <t> [--body <b> \| --body-file <path\|-> \| --editor]` | Create a draft item. Title is required and non-empty. *(A1)* `--body-file -` reads the body from stdin. `--editor` opens `$VISUAL`/`$EDITOR` to write it. The three body sources are mutually exclusive. |
+| `boardwalk item edit <ref> [--title <t>] [--body <b> \| --body-file <path\|-> \| --editor] [--field "Name=Value"]…` | Edit title/body where GitHub permits, and set project fields via repeatable `--field`. Field names and values validate against the live schema before any mutation; unknown fields, unknown single-select options, and invalid date/number values fail with exit 2 and the valid choices listed. Interactive use shows the same change summary (`Field: old → new`) and confirmation as the TUI (tui.md §4); `--dry-run` prints that summary without applying (ADR 0009). *(A1)* `--editor` opens the current body in `$VISUAL`/`$EDITOR`. All changes go out in one request (performance.md §2). Because GitHub applies them one at a time, the result marks each line `✓ applied` or `✗ failed`. Any failure exits with that failure's ADR 0009 code, and `--json` reports per-field status. |
+| `boardwalk item move <ref> --to <option> [--field <name>]` | *(A1)* Set the item's **default board field** to `<option>`. The default board field is the single-select field named `Status`, or else the project's first single-select field (tui.md §1 rules 2–3). It **never** depends on the remembered TUI grouping preference, so a script's meaning cannot change when someone regroups the board. `--field` names another single-select field explicitly. The option validates against that field's live options; an invalid option fails with exit 2 listing the valid options. Prints `Field: old → new`. This verb exists because moving is the most common board action; it must behave exactly as `item edit --field "<Field>=<option>"` would, with no divergent semantics. |
 | `boardwalk item archive <ref>` | Archive the item (the MVP's only destructive verb). Requires explicit confirmation interactively; scripts must pass `--yes`. There is no `item remove`/`delete` in the MVP. |
 
 ### `board`
@@ -117,7 +135,7 @@ design — before any usage data justifies it.
 Four flags are **persistent globals**, accepted on every command
 (Cobra persistent flags; position-independent for the user, so
 `boardwalk item list --json` and `boardwalk --json item list` behave
-identically):
+identically). *(A1)* A fifth, `--no-cache`, was added:
 
 | Flag | Meaning |
 |---|---|
@@ -125,6 +143,7 @@ identically):
 | `--json` | Bare JSON on stdout, JSON error object on stderr (ADR 0009). |
 | `--dry-run` | Print the planned mutation/change summary; change nothing. Valid on every mutation; harmless elsewhere. |
 | `--yes` | Skip interactive confirmation for a mutation the user has explicitly authorised. Never skips validation or ambiguity checks (§1). |
+| `--no-cache` | *(A1)* Bypass the local schema cache and board snapshot for this run ([ADR 0011](../decisions/0011-local-cache-and-snapshot.md)); `BOARDWALK_NO_CACHE=1` is equivalent. |
 
 Script-safety rules:
 
@@ -194,8 +213,80 @@ usability deferred to post-release feedback (the first grammar test
 would happen on users who never volunteered), and deferring
 validation entirely (quietly deletes PRD §7).
 
+## 5. Human output and styling *(A1, 2026-10-13)*
+
+To meet the beautiful CLI goal, human-readable terminal output follows
+a consistent visual standard across all commands (ADR 0007).
+
+### Tables and listings
+
+- `boardwalk item list` and `project list` format rows as an aligned,
+  space-padded table on TTYs. Header text is bold (`fg`). Status and
+  single-select fields render with option tint chips matching GitHub's
+  palette (tui.md §3).
+- **Truncation on TTY:** columns truncate with `…` to fit terminal width
+  without hard wrapping onto subsequent lines.
+- **Piped output (stdout not a TTY, without `--json`):** tab-separated
+  values (TSV), no headers, no truncation, no color codes, compatible
+  with standard Unix tools (`awk`, `cut`, `grep`), matching `gh`'s
+  piping conventions (ADR 0009).
+
+### Progress and spinners
+
+- Network operations display a subtle spinner on **stderr only**
+  (never polluting stdout or piped output).
+- **Debounced display:** the spinner appears only if the operation takes
+  longer than **150 ms**, preventing visual flicker on fast cached reads
+  or fast connections (performance.md B1–B3).
+
+### Success lines and feedback
+
+- Mutations print a structured, single-line summary on success:
+  `✓ Moved <ref>  <old_value> → <new_value>` or
+  `✓ Created draft <ref> "<title>"`.
+- Errors and warnings print to **stderr** with `✗` or `!`, using the
+  remediation format defined in ADR 0009 and ADR 0010.
+
+### Hyperlinks (OSC 8)
+
+- On terminals supporting OSC 8 hyperlink sequences, issue/PR references
+  and URLs are emitted as clickable links pointing to the GitHub web
+  item, with the visible text formatted as `owner/repo#number`. Terminals
+  without OSC 8 support receive plain text without escape sequences.
+
+### Interactive prompts
+
+- Interactive prompts on TTYs (first-run project selection, confirmation
+  prompts for archive or multi-field edits) use **Huh** (ADR 0007),
+  sharing the exact typography, borders, and color tokens of the TUI theme.
+
+### Color and environment
+
+- Follows the CLI color standard:
+  - If `NO_COLOR` is set (regardless of value), all color and style escapes
+    are omitted.
+  - If `CLICOLOR_FORCE` is set to a non-zero value, styling is emitted
+    even when stdout/stderr is redirected.
+  - If `TERM=dumb`, styling is disabled.
+- Global flag `--color=auto|always|never` overrides environment detection.
+
 ## Specification status
 
 All sections of this specification were settled in the decision
 interview and accepted as **Final** by the owner on 2026-10-13.
 Changes from here require a spec amendment, not a silent edit.
+
+## Amendment log
+
+- **A1 (2026-10-13)** — owner approval of the
+  [beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md):
+  - §1: `draft:<id>` uses stable numeric `databaseId`; resolution cost
+    rules added (issue-side O(1) lookup, cached databaseId map, server-side query).
+  - §2: `item list` server-side query filtering and `--status` on default
+    board field; `--body-file` and `--editor` options for `add`/`edit`;
+    one-request batched saves with per-field status; `item move` decoupled
+    from TUI grouping preference and accepts `--field`.
+  - §3: `--no-cache` added as fifth persistent global flag (ADR 0011).
+  - §5: new — human output standards, table truncation, piped TSV format,
+    debounced stderr progress spinner, OSC 8 hyperlinks, Huh prompts,
+    and NO_COLOR / `--color` handling.

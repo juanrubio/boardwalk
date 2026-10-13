@@ -1,7 +1,9 @@
 # ADR 0004 — Acceptance fixtures: three-board set, captured + synthetic
 
-**Status:** Final
+**Status:** Final — amended by A1 (2026-10-13)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
+**Amended:** 2026-10-13 — A1, owner approval of the
+[beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md)
 **Date:** 2026-10-13
 **Deciders:** Project owner (accepted option A in decision interview, 2026-10-13)
 **Depends on:** [ADR 0001](0001-implementation-language-go.md) (Final), [ADR 0002](0002-github-api-access-go-gh.md) (Final), [ADR 0003](0003-command-grammar-noun-first.md) (Final)
@@ -41,7 +43,10 @@ responses for offline tests, with live runs as smoke tests only:
    hard-coded. Source (owner-confirmed 2026-10-13): `juanrubio/3`
    Life Board.
 3. **Large board** — 100+ items proving pagination stays usable and fast
-   (PRD §6.2). No live board qualifies, so this slot is **synthetic**:
+   (PRD §6.2). *(A1)* To satisfy the performance budgets
+   ([performance.md](../specs/performance.md) B6–B8), this slot is generated
+   at **100, 1,000, and 10,000 items** as captured GraphQL fixtures.
+   No live board qualifies, so this slot is **synthetic**:
    generated items in a captured-response fixture, not a live project.
 
 Missing shapes are covered synthetically rather than by creating live
@@ -82,11 +87,9 @@ access must never be required for the fixture suite.
 - If a real organisation board or 100+-item board becomes available, its
   captured responses should replace the synthetic fixture for that slot.
 
-## Unresolved
+## Amendment log
 
-- Slot 1–2 sources confirmed by the owner (2026-10-13): `juanrubio/1`
-  SnazzyEmail and `juanrubio/3` Life Board. No dedicated test boards will
-  be created first (option B rejected).
-- Alias/config scope — **resolved:** user config only, see
-  [ADR 0005](0005-alias-config-user-only.md) (Final).
-- Remaining PRD §13 question 6 — since resolved by ADR 0006.
+- **A1 (2026-10-13)** — owner approval of the
+  [beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md):
+  Slot 3 expanded to generate 100, 1,000, and 10,000 item synthetic fixtures
+  to validate responsiveness budgets under [performance.md](../specs/performance.md).
