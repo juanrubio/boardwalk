@@ -236,12 +236,23 @@ recorded in [mockups.md](mockups.md).
   fit, the board scrolls horizontally and the focused column is always
   fully visible. Column bodies scroll vertically and independently.
   *(A3, owner decision)* **Fluid column widths.** 36 cells (31 in
-  compact density) is the *minimum*, not a fixed width: the columns
-  on screen share the full board width evenly, stretching up to a
-  56-cell cap so titles and references truncate less on wide
-  terminals. Past the cap the board stops growing (very wide cards
-  scan badly); any remainder stays empty at the right. Collapsed
-  columns stay 15 cells and do not share in the stretch.
+  compact density) is the *preferred* width, not a fixed one, and the
+  board avoids horizontal scrolling whenever it reasonably can:
+  1. If every column fits at or above the preferred width, the
+     columns on screen share the full board width evenly, stretching
+     up to a 56-cell cap so titles and references truncate less on
+     wide terminals. Past the cap the board stops growing (very wide
+     cards scan badly); any remainder stays empty at the right.
+  2. If all columns together are only slightly too wide, they shrink
+     evenly below the preferred width — down to a floor of 30 cells
+     (26 compact) — so the whole board fits without scrolling. At
+     these widths a comfortable card shortens its reference to
+     `…#<number>` exactly as compact cards do (A2); the full reference
+     remains in detail, list view, and on copy.
+  3. Only when even the floor cannot fit every column does the board
+     fall back to a scrolling window at the preferred width, with the
+     off-screen hints above.
+  Collapsed columns stay 15 cells and do not share in the stretch.
 - *(A1)* **Off-screen hints.** Hidden columns are shown at the board
   edges as `◂ 2` / `3 ▸` (the number of columns off-screen). A column
   with cards below the fold ends with `↓ 12 more`. Nothing off-screen is
@@ -664,3 +675,8 @@ build starts. The results are recorded as an amendment.
   - [mockups.md](mockups.md) redrawn at true cell geometry with the
     list-view, edit-form, help/search, archive-modal, too-small, and
     monochrome states added.
+- **A3 (2026-10-13)** — owner decision after screenshot review:
+  - §3: fluid column widths — stretch to a 56-cell cap above the
+    preferred 36/31-cell widths, shrink-to-fit down to a 30/26-cell
+    floor before any horizontal scrolling, with compact-style
+    `…#<number>` reference shortening on shrunk comfortable cards.

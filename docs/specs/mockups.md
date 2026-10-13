@@ -49,9 +49,11 @@ Boardwalk · snazzy (juanrubio/1) · Grouped by Status · 14 items              
 >   width three columns fit in full, so "In Review" and "Done" are
 >   off-screen to the right and the header row says so (`2 cols ▸`).
 >   Nothing is ever clipped mid-card. *(A3)* Column widths are fluid:
->   this frame's 120-cell rendering stretches its three visible columns
->   to 40/39/39 cells; the 36-cell drawings elsewhere remain the
->   minimum-width geometry (tui.md §3 A3).
+>   this frame's 120-cell rendering keeps a three-column scrolling
+>   window stretched to 40/39/39 cells; when every column nearly fits,
+>   columns shrink toward a 30-cell floor instead of scrolling, and
+>   the 36-cell drawings elsewhere remain the preferred-width
+>   geometry (tui.md §3 A3).
 > - Rounded card borders (comfortable density); the focused card uses a
 >   thick border plus `▸`, with the marker cell reserved on every card
 >   so focus never shifts a title. Every card is exactly 5 lines tall.
