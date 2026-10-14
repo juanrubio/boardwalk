@@ -140,6 +140,36 @@ func optionNames(f githubx.Field) string {
 	return strings.Join(names, ", ")
 }
 
+// SingleRepo returns the one repository used by the board's linked
+// items, or "" when linked items span several repositories (or there
+// are none). Used to default a draft conversion's target repo (A7).
+func SingleRepo(b *githubx.Board) string {
+	repo := ""
+	for _, it := range b.Items {
+		if it.Kind == githubx.KindDraft || it.Repo == "" {
+			continue
+		}
+		if repo == "" {
+			repo = it.Repo
+		} else if repo != it.Repo {
+			return ""
+		}
+	}
+	return repo
+}
+
+// ConvertDraft converts a draft item into a real issue in repo
+// (owner/name), keeping its board position and field values (A7).
+func (s *Service) ConvertDraft(ctx context.Context, project githubx.Project, it githubx.Item, repo string) (githubx.Item, error) {
+	if it.Kind != githubx.KindDraft {
+		return githubx.Item{}, exiterr.Usagef("%s is a %s, not a draft; only drafts can be converted", it.Ref(), it.Kind)
+	}
+	if s == nil || s.Client == nil {
+		return githubx.Item{}, exiterr.Failuref("no GitHub client configured")
+	}
+	return s.Client.ConvertDraftToIssue(ctx, project.ID, it.ID, repo)
+}
+
 // ApplyChanges sends title/body first (separate GitHub mutations),
 // then all project-field changes as one batched request. Per-change
 // results are returned; applied changes are never rolled back.

@@ -120,6 +120,43 @@ func (c *gqlClient) AddItem(ctx context.Context, projectID, contentID string) (I
 	return c.LoadItemDetail(ctx, resp.AddProjectV2ItemById.Item.ID)
 }
 
+const convertDraftMutation = `
+mutation BoardwalkConvertDraft($item: ID!, $repo: ID!) {
+  convertProjectV2DraftIssueItemToIssue(input: {itemId: $item, repositoryId: $repo}) {
+    item { id }
+  }
+}`
+
+func (c *gqlClient) ConvertDraftToIssue(ctx context.Context, projectID, itemID, repo string) (Item, error) {
+	if err := c.CheckAuth(ctx); err != nil {
+		return Item{}, err
+	}
+	parts := strings.SplitN(repo, "/", 2)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return Item{}, exiterr.Usagef("repository %q must look like owner/repo", repo)
+	}
+	var repoResp struct {
+		Repository *struct{ ID string }
+	}
+	if err := c.do(ctx, `query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { id } }`,
+		map[string]interface{}{"owner": parts[0], "name": parts[1]}, &repoResp); err != nil {
+		return Item{}, err
+	}
+	if repoResp.Repository == nil || repoResp.Repository.ID == "" {
+		return Item{}, exiterr.NotFoundf("repository %s not found", repo)
+	}
+	var resp struct {
+		ConvertProjectV2DraftIssueItemToIssue struct {
+			Item struct{ ID string }
+		}
+	}
+	vars := map[string]interface{}{"item": itemID, "repo": repoResp.Repository.ID}
+	if err := c.do(ctx, convertDraftMutation, vars, &resp); err != nil {
+		return Item{}, err
+	}
+	return c.LoadItemDetail(ctx, itemID)
+}
+
 const createDraftMutation = `
 mutation BoardwalkDraft($project: ID!, $title: String!, $body: String) {
   addProjectV2DraftIssue(input: {projectId: $project, title: $title, body: $body}) {

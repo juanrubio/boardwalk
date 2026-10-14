@@ -409,6 +409,41 @@ func runItemDelete(ctx context.Context, opts *Options, ref string) error {
 	return nil
 }
 
+func runItemConvert(ctx context.Context, opts *Options, ref, repo string) error {
+	svc, project, board, err := loadBoardFor(ctx, opts)
+	if err != nil {
+		return err
+	}
+	it, err := core.ResolveItemRef(board, ref)
+	if err != nil {
+		return err
+	}
+	if repo == "" {
+		repo = core.SingleRepo(board)
+		if repo == "" {
+			return exiterr.Usagef("--repo is required: the board's linked items do not share one repository")
+		}
+	}
+	summary := []string{fmt.Sprintf("Convert %s (%s) %q into an issue in %s — it keeps its board position and field values", it.Ref(), it.Kind, it.Title, repo)}
+	proceed, err := confirmGate(opts, summary)
+	if err != nil || !proceed {
+		return err
+	}
+	converted, err := svc.ConvertDraft(ctx, project, it, repo)
+	if err != nil {
+		return err
+	}
+	if opts.JSON {
+		enc := json.NewEncoder(opts.Out)
+		return enc.Encode(map[string]any{"ref": converted.Ref(), "converted": true, "title": converted.Title, "url": converted.URL})
+	}
+	_, _ = fmt.Fprintf(opts.Out, "✓ Converted %s → %s\n", it.Ref(), converted.Ref())
+	if converted.URL != "" {
+		_, _ = fmt.Fprintf(opts.Out, "  %s\n", converted.URL)
+	}
+	return nil
+}
+
 func runItemArchive(ctx context.Context, opts *Options, ref string) error {
 	svc, project, board, err := loadBoardFor(ctx, opts)
 	if err != nil {

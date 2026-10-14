@@ -150,6 +150,9 @@ func (m *model) renderHeader(w int) string {
 	if m.overlay == overlayAdd {
 		left = "Add issue/PR reference: " + m.addText + "▌  (Enter adds, Esc cancels)"
 	}
+	if m.overlay == overlayConvert {
+		left = "Convert draft to issue in repo: " + m.convertText + "▌  (Enter converts, Esc cancels)"
+	}
 	right := ""
 	switch {
 	case m.loading:
@@ -218,6 +221,8 @@ func (m *model) footerHint() string {
 		return "Enter keep filter · Esc clear filter"
 	case overlayAdd:
 		return "Enter add · Esc cancel"
+	case overlayConvert:
+		return "Enter convert draft to issue · Esc cancel"
 	case overlayDiscard:
 		return "y discard changes · any other key keep editing"
 	case overlayQuitDirty:

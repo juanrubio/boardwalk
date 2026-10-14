@@ -85,6 +85,8 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case overlayBoards:
 		return m.onBoardsKey(msg, ks)
+	case overlayConvert:
+		return m.onConvertKey(msg, ks)
 	case overlayGroup:
 		return m.onGroupKey(s)
 	case overlaySearch:
@@ -199,6 +201,20 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		if _, ok := m.focusedItem(); ok {
 			m.overlay = overlayDelete
 			m.deleteStage = 0
+		}
+		return m, nil
+	case "C":
+		// Convert draft to issue (A7): repo prompt, drafts only.
+		if it, ok := m.focusedItem(); ok {
+			if it.Kind != githubx.KindDraft {
+				m.footer = "Only drafts can be converted (" + it.Ref() + " is a " + string(it.Kind) + ")."
+				return m, nil
+			}
+			m.overlay = overlayConvert
+			m.convertText = ""
+			if m.board != nil {
+				m.convertText = core.SingleRepo(m.board)
+			}
 		}
 		return m, nil
 	case "o":
@@ -449,6 +465,50 @@ func (m *model) deleteCmd() tea.Cmd {
 		}
 		return deleteResultMsg{err: svc.Client.DeleteItem(m.ctx, proj.ID, it.ID)}
 	}
+}
+
+func (m *model) convertCmd(repo string) tea.Cmd {
+	it, ok := m.focusedItem()
+	if !ok {
+		return nil
+	}
+	svc, proj := m.svc, m.project
+	return func() tea.Msg {
+		if svc == nil {
+			return convertResultMsg{err: fmt.Errorf("no GitHub client configured")}
+		}
+		converted, err := svc.ConvertDraft(m.ctx, proj, it, repo)
+		return convertResultMsg{item: converted, err: err}
+	}
+}
+
+// onConvertKey handles the convert repo prompt (A7), mirroring the
+// add-reference prompt: printable keys edit, Enter converts, Esc cancels.
+func (m *model) onConvertKey(msg tea.KeyPressMsg, ks string) (tea.Model, tea.Cmd) {
+	switch ks {
+	case "esc":
+		m.overlay = overlayNone
+		return m, nil
+	case "enter":
+		repo := strings.TrimSpace(m.convertText)
+		m.overlay = overlayNone
+		if repo == "" {
+			m.footer = "Enter a repository (owner/repo) to convert into."
+			return m, nil
+		}
+		m.footer = "Converting…"
+		return m, m.convertCmd(repo)
+	case "backspace":
+		r := []rune(m.convertText)
+		if len(r) > 0 {
+			m.convertText = string(r[:len(r)-1])
+		}
+		return m, nil
+	}
+	if msg.Key().Text != "" {
+		m.convertText += msg.Key().Text
+	}
+	return m, nil
 }
 
 func (m *model) archiveCmd() tea.Cmd {

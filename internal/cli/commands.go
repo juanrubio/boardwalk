@@ -55,6 +55,7 @@ func newItemCmd(opts *Options) *cobra.Command {
 	cmd.AddCommand(newItemMoveCmd(opts))
 	cmd.AddCommand(newItemArchiveCmd(opts))
 	cmd.AddCommand(newItemDeleteCmd(opts))
+	cmd.AddCommand(newItemConvertCmd(opts))
 	return cmd
 }
 
@@ -170,6 +171,22 @@ func newItemDeleteCmd(opts *Options) *cobra.Command {
 			return runItemDelete(cmd.Context(), opts, args[0])
 		},
 	}
+}
+
+func newItemConvertCmd(opts *Options) *cobra.Command {
+	var repo string
+	cmd := &cobra.Command{
+		Use:   "convert <ref>",
+		Short: "Convert a draft item into an issue",
+		Example: `  boardwalk item convert draft:91204910 --repo juanrubio/snazzyemail
+  boardwalk item convert draft:91204910 --dry-run`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runItemConvert(cmd.Context(), opts, args[0], repo)
+		},
+	}
+	cmd.Flags().StringVar(&repo, "repo", "", "repository for the new issue (default: the board's single linked repository)")
+	return cmd
 }
 
 func newBoardCmd(opts *Options) *cobra.Command {

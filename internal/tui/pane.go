@@ -321,6 +321,7 @@ func (m *model) renderHelp(w int) string {
 		"z collapse     d density     r refresh",
 		"o browser      y/Y copy      u undo move",
 		"D delete       x archive",
+		"C convert draft to issue",
 		"P boards       [ ] prev/next board",
 		"? this help    q quit        Esc back",
 	}

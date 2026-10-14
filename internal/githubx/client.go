@@ -56,6 +56,10 @@ type Client interface {
 	// DeleteItem permanently deletes a project item (ADR 0012). A
 	// linked issue/PR is untouched; a draft's content is gone.
 	DeleteItem(ctx context.Context, projectID, itemID string) error
+
+	// ConvertDraftToIssue converts a draft item into a real issue in
+	// repo (owner/name), keeping board position and field values (A7).
+	ConvertDraftToIssue(ctx context.Context, projectID, itemID, repo string) (Item, error)
 }
 
 // FieldAssign is one named field assignment in a batch save.

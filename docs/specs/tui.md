@@ -146,6 +146,7 @@ neighbours (performance.md §2), so the pane stays responsive.
 | `a` | *(A1)* Add an existing issue/PR by reference (see §4) |
 | `x` | *(A1)* Archive the focused item, after explicit confirmation (ADR 0006) |
 | `D` | *(ADR 0012)* Permanently delete the focused item, after double confirmation |
+| `C` | *(A7)* Convert the focused draft into an issue (repo prompt; drafts only) |
 | `o` | *(A1)* Open the focused item on GitHub in the browser |
 | `y` | *(A1)* Copy the focused item's reference (cli.md §1); `Y` copies its URL |
 | `g` | Grouping-field picker (§1) |
@@ -177,6 +178,13 @@ kind, title). It is applied only when the user presses `y` at that
 prompt. Any other key cancels. Archive is not optimistic: the card stays
 until GitHub confirms, then it is removed and focus moves to the nearest
 neighbour.
+
+*(A7)* **Convert draft to issue.** `C` on a draft opens a one-line
+repository prompt (pre-filled with the board's single linked
+repository when there is exactly one), `Enter` converts via
+`convertProjectV2DraftIssueItemToIssue`, and the card stays in place
+as an issue with the new reference. On a non-draft `C` only notes
+that drafts convert. The CLI twin is `item convert` (cli.md).
 
 *(ADR 0012)* **Delete** uses the same modal in two stages: the first `y`
 arms the deletion, and only a second successive `y` executes it. Both
@@ -744,3 +752,7 @@ build starts. The results are recorded as an amendment.
     boards the viewer can see), `[`/`]` cycle with wrap, lazy list
     fetch, snapshot-first switch, stale-page guard; board-level keys
     only so dirty forms cannot be bypassed.
+- **A7 (2026-10-14)** — owner request: convert drafts to issues.
+  - §2: `C` converts the focused draft via a repository prompt;
+    cli.md gains `item convert <ref> [--repo <owner/repo>]` with
+    single-repo inference; position and field values are kept.

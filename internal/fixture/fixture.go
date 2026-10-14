@@ -320,6 +320,23 @@ func (c *Client) UpdateTitleBody(_ context.Context, item githubx.Item, title, bo
 	return *it, nil
 }
 
+func (c *Client) ConvertDraftToIssue(_ context.Context, _, itemID, repo string) (githubx.Item, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	_, it := c.findItem(itemID)
+	if it == nil {
+		return githubx.Item{}, exiterr.NotFoundf("no fixture item %q", itemID)
+	}
+	if it.Kind != githubx.KindDraft {
+		return githubx.Item{}, exiterr.Usagef("only drafts can be converted")
+	}
+	it.Kind = githubx.KindIssue
+	it.Repo = repo
+	it.Number = 900 + int(it.DatabaseID%97)
+	it.URL = "https://github.com/" + repo + "/issues/" + strconv.Itoa(it.Number)
+	return *it, nil
+}
+
 func (c *Client) DeleteItem(_ context.Context, projectID, itemID string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()

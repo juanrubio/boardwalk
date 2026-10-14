@@ -160,6 +160,24 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.clampFocus()
 		m.footer = "Archived."
 		return m, nil
+	case convertResultMsg:
+		if msg.err != nil {
+			m.footer = "Convert failed: " + msg.err.Error()
+			return m, nil
+		}
+		if m.board != nil {
+			for _, existing := range m.board.Items {
+				if existing.ID == msg.item.ID && len(msg.item.Values) == 0 {
+					msg.item.Values = existing.Values
+					break
+				}
+			}
+		}
+		m.replaceItem(msg.item)
+		m.rebuildFocus()
+		m.setFocusedByID(msg.item.ID)
+		m.footer = "Converted → " + msg.item.Ref()
+		return m, nil
 	case deleteResultMsg:
 		m.overlay = overlayNone
 		m.deleteStage = 0

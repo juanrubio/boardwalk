@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -78,6 +79,51 @@ func TestAddDraftAndArchive(t *testing.T) {
 	_ = buf2
 	if err := runCmd(t, opts2, "item", "archive", "fixture/repo#32", "--yes"); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// (A7) Convert: drafts convert with repo inference, non-drafts are a
+// usage error, and --dry-run changes nothing.
+func TestConvertDraft(t *testing.T) {
+	opts, buf := fixtureOptions(t, false)
+	if err := runCmd(t, opts, "item", "add", "--draft", "--title", "Convert me", "--yes"); err != nil {
+		t.Fatal(err)
+	}
+	m := regexp.MustCompile(`draft:\d+`).FindString(buf.String())
+	if m == "" {
+		t.Fatalf("no draft ref in add output:\n%s", buf.String())
+	}
+	buf.Reset()
+	if err := runCmd(t, opts, "item", "convert", m, "--yes"); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "Converted "+m+" → fixture/repo#") {
+		t.Fatalf("expected conversion line, got:\n%s", buf.String())
+	}
+	// Non-draft cannot convert (exit 2).
+	err := runCmd(t, opts, "item", "convert", "fixture/repo#32", "--yes")
+	if err == nil || exiterr.CodeOf(err) != exiterr.CodeUsage {
+		t.Fatalf("non-draft convert: err=%v code=%d, want usage", err, exiterr.CodeOf(err))
+	}
+}
+
+func TestConvertDryRunChangesNothing(t *testing.T) {
+	opts, buf := fixtureOptions(t, false)
+	if err := runCmd(t, opts, "item", "add", "--draft", "--title", "Convert dry", "--yes"); err != nil {
+		t.Fatal(err)
+	}
+	m := regexp.MustCompile(`draft:\d+`).FindString(buf.String())
+	buf.Reset()
+	if err := runCmd(t, opts, "item", "convert", m, "--dry-run"); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "Dry run") {
+		t.Fatalf("expected dry-run output, got:\n%s", buf.String())
+	}
+	// Still a draft afterwards: converting for real succeeds.
+	buf.Reset()
+	if err := runCmd(t, opts, "item", "convert", m, "--yes"); err != nil {
+		t.Fatalf("convert after dry-run failed: %v", err)
 	}
 }
 

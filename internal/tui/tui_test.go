@@ -589,6 +589,49 @@ func TestEditorModalCursorAndArrows(t *testing.T) {
 	}
 }
 
+// (A7) C on a draft opens the repo prompt (pre-filled with the
+// board's single repo); Enter converts and the card stays an issue.
+func TestConvertDraftFlow(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/3")
+	var draft *githubx.Item
+	for i := range m.board.Items {
+		if m.board.Items[i].Kind == githubx.KindDraft {
+			draft = &m.board.Items[i]
+			break
+		}
+	}
+	if draft == nil {
+		t.Fatal("no draft in fixture board")
+	}
+	m.setFocusedByID(draft.ID)
+	m = send(m, "C")
+	if m.overlay != overlayConvert {
+		t.Fatalf("C should open convert prompt, overlay=%v", m.overlay)
+	}
+	if m.convertText != "fixture/repo" {
+		t.Fatalf("convert prompt prefill = %q, want fixture/repo", m.convertText)
+	}
+	mm, cmd := m.Update(key("enter"))
+	m = mm.(*model)
+	if cmd == nil {
+		t.Fatal("convert should return a command")
+	}
+	mm, _ = m.Update(cmd())
+	m = mm.(*model)
+	for _, bi := range m.board.Items {
+		if bi.ID == draft.ID {
+			if bi.Kind != githubx.KindIssue || bi.Repo != "fixture/repo" {
+				t.Fatalf("converted item = kind %s repo %s", bi.Kind, bi.Repo)
+			}
+			if !strings.HasPrefix(m.footer, "Converted → ") {
+				t.Fatalf("footer = %q", m.footer)
+			}
+			return
+		}
+	}
+	t.Fatal("converted item missing from board")
+}
+
 // Regression: a detail response carrying no field values must not
 // strip the board item's values (the item would fall out of its
 // Status column into "No Status" after merely opening detail).

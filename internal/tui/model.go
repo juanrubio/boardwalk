@@ -34,7 +34,8 @@ const (
 	overlayAdd
 	overlayDiscard // discard dirty form?
 	overlayQuitDirty
-	overlayBoards // board picker (A6)
+	overlayBoards  // board picker (A6)
+	overlayConvert // convert draft to issue repo prompt (A7)
 )
 
 type paneKind int
@@ -117,6 +118,7 @@ type model struct {
 
 	groupIdx       int
 	searchText     string
+	convertText    string
 	addText        string
 	addPreview     string
 	savingMsg      string
@@ -163,7 +165,11 @@ type (
 	saveResultMsg    struct{ results []core.Result }
 	archiveResultMsg struct{ err error }
 	deleteResultMsg  struct{ err error }
-	draftResultMsg   struct {
+	convertResultMsg struct {
+		item githubx.Item
+		err  error
+	}
+	draftResultMsg struct {
 		item githubx.Item
 		err  error
 	}
