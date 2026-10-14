@@ -39,3 +39,7 @@ make build
 Working name: **Boardwalk**
 Repository: **gh-boardwalk**
 Command: **boardwalk**
+
+## License
+
+[MIT](LICENSE) © Juan A. Rubio
