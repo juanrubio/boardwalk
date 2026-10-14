@@ -48,7 +48,13 @@ func (m *model) renderDetail(w, h int) string {
 	}
 	it := *m.detail
 	var b strings.Builder
-	b.WriteString(m.theme.Title.Render(truncateRunes(m.displayTitle(it.Title), w)) + "\n")
+	if m.paneFocus {
+		// Visible pane focus (A8): ▸ marker in the focus colour.
+		title := "▸ " + truncateRunes(m.displayTitle(it.Title), max(1, w-2))
+		b.WriteString(m.theme.Title.Foreground(m.theme.Tokens.BorderFocus).Render(title) + "\n")
+	} else {
+		b.WriteString(m.theme.Title.Render(truncateRunes(m.displayTitle(it.Title), w)) + "\n")
+	}
 	b.WriteString(strings.Repeat("─", min(w, 45)) + "\n")
 	kindRef := string(it.Kind) + " · " + it.Ref()
 	fmt.Fprintf(&b, "Kind:     %s\n", kindRef)
@@ -86,8 +92,13 @@ func (m *model) renderDetail(w, h int) string {
 	}
 	b.WriteString(body)
 	lines := strings.Split(b.String(), "\n")
-	// scroll
-	if m.detailScroll > 0 && m.detailScroll < len(lines) {
+	// Scroll, clamped to the last full page: an unbounded offset
+	// used to run past the end, wrap the view back to the top, and
+	// leave Up apparently dead until focus cycled out and back.
+	if maxScroll := max(0, len(lines)-h); m.detailScroll > maxScroll {
+		m.detailScroll = maxScroll
+	}
+	if m.detailScroll > 0 {
 		lines = lines[m.detailScroll:]
 	}
 	for i, l := range lines {

@@ -168,6 +168,12 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "u":
 		return m, m.doUndo()
 	case "enter":
+		// With the pane open and focus on the board, Enter dismisses
+		// it (A8); otherwise it opens detail for the focused card.
+		if m.pane == paneDetail {
+			m.pane, m.paneFocus = paneNone, false
+			return m, nil
+		}
 		it, ok := m.focusedItem()
 		if !ok {
 			return m, nil

@@ -77,7 +77,7 @@ addition, never a requirement.
 |---|---|
 | `↑`/`k`, `↓`/`j` | Previous / next card in the focused column |
 | `←`/`h`, `→`/`l` | Previous / next column (focus follows to nearest card) |
-| `Enter` | Open the detail pane for the focused card |
+| `Enter` | Open the detail pane for the focused card; *(A8)* with the pane open and focus on the board, dismiss it |
 | `Tab` | *(A1)* Move focus between the board and an open detail pane |
 | `Esc` / `q` in a panel | Close the panel and return focus to the board |
 | `q` on the board | Quit (see "Quitting" below) |
@@ -97,6 +97,11 @@ board focus stays on the board: `j/k/h/l` keep moving between cards and
 the pane follows the focused card. `Tab` moves focus into the pane (to
 scroll a long body) and back. Bodies load lazily and are prefetched for
 neighbours (performance.md §2), so the pane stays responsive.
+*(A8)* Pane focus is visible: while the pane has focus its title
+carries a `▸` marker in the focus colour and the board/pane separator
+is drawn thick in the focus colour; `Enter` with focus on the board
+dismisses the pane (as `Esc` does). Pane scrolling clamps at the
+last full page — it never wraps to the top or runs past the end.
 
 ### Moving a card between columns
 
@@ -756,3 +761,7 @@ build starts. The results are recorded as an amendment.
   - §2: `C` converts the focused draft via a repository prompt;
     cli.md gains `item convert <ref> [--repo <owner/repo>]` with
     single-repo inference; position and field values are kept.
+- **A8 (2026-10-14)** — owner feedback on the detail pane:
+  - §2: pane focus is visible (`▸` title marker and thick focus-colour
+    separator while the pane has focus); `Enter` with focus on the
+    board dismisses the pane.

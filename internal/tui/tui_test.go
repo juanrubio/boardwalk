@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -586,6 +587,66 @@ func TestEditorModalCursorAndArrows(t *testing.T) {
 	body := m.form.fields[1].value()
 	if !strings.Contains(body, "first!") || !strings.Contains(body, "second") {
 		t.Fatalf("body arrow navigation failed, body:\n%s", body)
+	}
+}
+
+// (A8) Enter with the detail pane open and focus on the board
+// dismisses the pane; Tab into the pane shows a focus marker.
+func TestEnterDismissesDetailPane(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	m = send(m, "enter")
+	if m.pane != paneDetail {
+		t.Fatalf("Enter should open detail, pane=%v", m.pane)
+	}
+	m = send(m, "enter")
+	if m.pane != paneNone {
+		t.Fatalf("Enter with pane open (board focus) should dismiss it, pane=%v", m.pane)
+	}
+	// Reopen, Tab into the pane: title carries the focus marker.
+	m = send(m, "enter")
+	m = send(m, "tab")
+	if !m.paneFocus {
+		t.Fatal("Tab should focus the pane")
+	}
+	it, _ := m.focusedItem()
+	if v := m.View().Content; !strings.Contains(v, "▸ "+it.Title) {
+		t.Fatalf("focused pane should mark its title with ▸:\n%s", v)
+	}
+}
+
+// Regression: detail scrolling must clamp at the last page. Past
+// the end it used to wrap back to the top with an ever-growing
+// offset, so Up appeared dead until Tab out/in.
+func TestDetailScrollClampsAtEnd(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	m = send(m, "enter")
+	var body strings.Builder
+	for i := 0; i < 100; i++ {
+		fmt.Fprintf(&body, "body line %03d\n", i)
+	}
+	m.detailBody = body.String()
+	m = send(m, "tab") // focus pane
+	for i := 0; i < 200; i++ {
+		m = send(m, "down")
+	}
+	out := m.renderDetail(40, 10)
+	if strings.Contains(out, "body line 000") {
+		t.Fatalf("scroll past end wrapped to the top:\n%s", out)
+	}
+	if !strings.Contains(out, "body line 099") {
+		t.Fatalf("scroll should rest on the last page:\n%s", out)
+	}
+	// One Up from the end must move immediately (the first render
+	// clamped the offset; a single Up steps exactly one line).
+	clamped := m.detailScroll
+	topBefore := strings.Split(out, "\n")[0]
+	m = send(m, "up")
+	out = m.renderDetail(40, 10)
+	if m.detailScroll != clamped-1 {
+		t.Fatalf("one Up should step one line: clamped=%d now=%d", clamped, m.detailScroll)
+	}
+	if strings.Split(out, "\n")[0] == topBefore {
+		t.Fatalf("one Up should change the top line:\n%s", out)
 	}
 }
 

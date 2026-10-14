@@ -250,7 +250,7 @@ func (m *model) footerHint() string {
 		if m.paneFocus {
 			return "↑↓/jk scroll · Tab board · Esc close pane"
 		}
-		return "↑↓/jk board · Tab pane · H/L move · e edit · x archive · Esc close pane"
+		return "↑↓/jk board · Tab pane · Enter/Esc close pane · H/L move · e edit · x archive"
 	}
 	if m.stale {
 		return "Showing snapshot — moves wait for live data · ↑↓/jk card · ←→/hl column · Enter detail · q quit"
@@ -270,14 +270,18 @@ func (m *model) renderBoardArea(w, h int) string {
 			boardW := w - paneW - 1 // 1 separator
 			board := m.renderBoard(boardW, h)
 			pane := m.renderPane(paneW, h)
-			return joinHorizontal(board, pane, boardW, paneW, h)
+			sep := "│"
+			if m.paneFocus {
+				sep = lipgloss.NewStyle().Foreground(m.theme.Tokens.BorderFocus).Render("┃")
+			}
+			return joinHorizontal(board, pane, boardW, paneW, h, sep)
 		}
 		return m.renderPane(w, h)
 	}
 	return m.renderBoard(w, h)
 }
 
-func joinHorizontal(left, right string, lw, rw, h int) string {
+func joinHorizontal(left, right string, lw, rw, h int, sep string) string {
 	ll := splitLines(left, h)
 	rl := splitLines(right, h)
 	out := make([]string, h)
@@ -286,7 +290,7 @@ func joinHorizontal(left, right string, lw, rw, h int) string {
 		// pad left to lw using visible width approx (strip ANSI for width)
 		l = padVisible(l, lw)
 		r := truncateANSI(rl[i], rw)
-		out[i] = l + "│" + r
+		out[i] = l + sep + r
 	}
 	return strings.Join(out, "\n")
 }
