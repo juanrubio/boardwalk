@@ -26,3 +26,28 @@ Note: tapes 01–06 were authored against an older VHS parser (combined
 `Set` lines and `;` separators); `showcase.tape` uses the current
 one-command-per-line syntax. Modernise a tape's syntax before rendering
 it with a current `vhs`.
+
+## Regenerating the showcase (sanitized)
+
+`showcase.gif` must never show a real board. It is recorded against
+the fixture-derived demo data in `demo/` (fictional `acme` boards),
+served by a demo-enabled build. The shipped binary has no demo mode;
+build one in a scratch worktree by adding this hook to
+`cmd/boardwalk/main.go`'s service factory, then render:
+
+```go
+if dir := os.Getenv("BOARDWALK_DEMO_DIR"); dir != "" {
+	fc, err := fixture.LoadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	return core.New(fc, cfg, nil), nil
+}
+```
+
+```sh
+git worktree add /tmp/bw-demo HEAD   # apply the hook there, build to a
+                                     # scratch dir as `boardwalk`
+cd tapes && HOME=/tmp/demo-home PATH="<scratch-bin>:$PATH" vhs showcase.tape
+git worktree remove /tmp/bw-demo
+```

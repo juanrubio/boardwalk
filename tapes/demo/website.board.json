@@ -1,0 +1,455 @@
+{
+ "Project": {
+  "ID": "PVT_fixture_1",
+  "Number": 1,
+  "Title": "Website Redesign",
+  "Owner": "acme",
+  "OwnerKind": "user",
+  "URL": "https://github.com/users/acme/projects/1",
+  "ItemsTotal": 14
+ },
+ "Fields": [
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy9s",
+   "Name": "Title",
+   "DataType": "TITLE"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy9w",
+   "Name": "Assignees",
+   "DataType": "ASSIGNEES"
+  },
+  {
+   "ID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+   "Name": "Status",
+   "DataType": "SINGLE_SELECT",
+   "Options": [
+    {
+     "ID": "f75ad846",
+     "Name": "Backlog",
+     "Color": "GREEN",
+     "Description": "This item hasn't been started"
+    },
+    {
+     "ID": "61e4505c",
+     "Name": "Ready",
+     "Color": "BLUE",
+     "Description": "This is ready to be picked up"
+    },
+    {
+     "ID": "47fc9ee4",
+     "Name": "In progress",
+     "Color": "YELLOW",
+     "Description": "This is actively being worked on"
+    },
+    {
+     "ID": "df73e18b",
+     "Name": "In review",
+     "Color": "PURPLE",
+     "Description": "This item is in review"
+    },
+    {
+     "ID": "98236657",
+     "Name": "Done",
+     "Color": "ORANGE",
+     "Description": "This has been completed"
+    }
+   ]
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy94",
+   "Name": "Labels",
+   "DataType": "LABELS"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy98",
+   "Name": "Linked pull requests",
+   "DataType": "LINKED_PULL_REQUESTS"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy-A",
+   "Name": "Milestone",
+   "DataType": "MILESTONE"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy-E",
+   "Name": "Repository",
+   "DataType": "REPOSITORY"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy-I",
+   "Name": "Reviewers",
+   "DataType": "REVIEWERS"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy-M",
+   "Name": "Parent issue",
+   "DataType": "PARENT_ISSUE"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qy-Q",
+   "Name": "Sub-issues progress",
+   "DataType": "SUB_ISSUES_PROGRESS"
+  },
+  {
+   "ID": "PVTSSF_lAHOAAjjuc4BPL40zg9qzKE",
+   "Name": "Priority",
+   "DataType": "SINGLE_SELECT",
+   "Options": [
+    {
+     "ID": "79628723",
+     "Name": "P0",
+     "Color": "RED",
+     "Description": ""
+    },
+    {
+     "ID": "0a877460",
+     "Name": "P1",
+     "Color": "ORANGE",
+     "Description": ""
+    },
+    {
+     "ID": "da944a9c",
+     "Name": "P2",
+     "Color": "YELLOW",
+     "Description": ""
+    }
+   ]
+  },
+  {
+   "ID": "PVTSSF_lAHOAAjjuc4BPL40zg9qzKI",
+   "Name": "Size",
+   "DataType": "SINGLE_SELECT",
+   "Options": [
+    {
+     "ID": "6c6483d2",
+     "Name": "XS",
+     "Color": "GREEN",
+     "Description": ""
+    },
+    {
+     "ID": "f784b110",
+     "Name": "S",
+     "Color": "PURPLE",
+     "Description": ""
+    },
+    {
+     "ID": "7515a9f1",
+     "Name": "M",
+     "Color": "RED",
+     "Description": ""
+    },
+    {
+     "ID": "817d0097",
+     "Name": "L",
+     "Color": "YELLOW",
+     "Description": ""
+    },
+    {
+     "ID": "db339eb2",
+     "Name": "XL",
+     "Color": "PINK",
+     "Description": ""
+    }
+   ]
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qzKM",
+   "Name": "Estimate",
+   "DataType": "NUMBER"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qzKQ",
+   "Name": "Start date",
+   "DataType": "DATE"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zg9qzKU",
+   "Name": "Target date",
+   "DataType": "DATE"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zhPqVoE",
+   "Name": "Created",
+   "DataType": "CREATED"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zhPqVoU",
+   "Name": "Updated",
+   "DataType": "UPDATED"
+  },
+  {
+   "ID": "PVTF_lAHOAAjjuc4BPL40zhPqVok",
+   "Name": "Closed",
+   "DataType": "CLOSED"
+  }
+ ],
+ "Items": [
+  {
+   "ID": "PVTI_snz_1",
+   "DatabaseID": 900001,
+   "Kind": "issue",
+   "Title": "Audit current site analytics",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 32,
+   "URL": "https://github.com/acme/website/issues/32",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "61e4505c",
+     "OptionName": "Ready"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_2",
+   "DatabaseID": 900002,
+   "Kind": "issue",
+   "Title": "Design new landing page hero",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 27,
+   "URL": "https://github.com/acme/website/issues/27",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "47fc9ee4",
+     "OptionName": "In progress"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_3",
+   "DatabaseID": 900003,
+   "Kind": "issue",
+   "Title": "Migrate blog to new CMS",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 38,
+   "URL": "https://github.com/acme/website/issues/38",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_4",
+   "DatabaseID": 900004,
+   "Kind": "issue",
+   "Title": "Add dark mode toggle",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 8,
+   "URL": "https://github.com/acme/website/issues/8",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "f75ad846",
+     "OptionName": "Backlog"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_5",
+   "DatabaseID": 900005,
+   "Kind": "issue",
+   "Title": "Compress hero images",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 12,
+   "URL": "https://github.com/acme/website/issues/12",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "f75ad846",
+     "OptionName": "Backlog"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_6",
+   "DatabaseID": 900006,
+   "Kind": "issue",
+   "Title": "Set up A/B test for pricing page",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 18,
+   "URL": "https://github.com/acme/website/issues/18",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "f75ad846",
+     "OptionName": "Backlog"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_7",
+   "DatabaseID": 900007,
+   "Kind": "issue",
+   "Title": "Write launch announcement",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 24,
+   "URL": "https://github.com/acme/website/issues/24",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_8",
+   "DatabaseID": 900008,
+   "Kind": "issue",
+   "Title": "Fix mobile navigation menu",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 25,
+   "URL": "https://github.com/acme/website/issues/25",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_9",
+   "DatabaseID": 900009,
+   "Kind": "issue",
+   "Title": "Add customer testimonials section",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 26,
+   "URL": "https://github.com/acme/website/issues/26",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_10",
+   "DatabaseID": 900010,
+   "Kind": "issue",
+   "Title": "Review accessibility audit",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 28,
+   "URL": "https://github.com/acme/website/issues/28",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_11",
+   "DatabaseID": 900011,
+   "Kind": "issue",
+   "Title": "Draft SEO migration checklist",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 29,
+   "URL": "https://github.com/acme/website/issues/29",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_12",
+   "DatabaseID": 900012,
+   "Kind": "issue",
+   "Title": "Prototype checkout flow",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 30,
+   "URL": "https://github.com/acme/website/issues/30",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_13",
+   "DatabaseID": 900013,
+   "Kind": "issue",
+   "Title": "User-test signup form",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 39,
+   "URL": "https://github.com/acme/website/issues/39",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "f75ad846",
+     "OptionName": "Backlog"
+    }
+   ]
+  },
+  {
+   "ID": "PVTI_snz_14",
+   "DatabaseID": 900014,
+   "Kind": "issue",
+   "Title": "Prepare launch retro notes",
+   "Archived": false,
+   "Repo": "acme/website",
+   "Number": 40,
+   "URL": "https://github.com/acme/website/issues/40",
+   "Values": [
+    {
+     "FieldID": "PVTSSF_lAHOAAjjuc4BPL40zg9qy90",
+     "FieldName": "Status",
+     "DataType": "SINGLE_SELECT",
+     "OptionID": "98236657",
+     "OptionName": "Done"
+    }
+   ]
+  }
+ ]
+}
