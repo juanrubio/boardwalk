@@ -49,6 +49,16 @@ never user error — and is fixed and re-run before release.
 Fixes that change command grammar require amending cli.md §2 and
 re-running the affected task (cli.md §4).
 
+## Outcome (2026-10-14) — owner-accepted variance
+
+The owner exercised all five tasks himself through real use (including
+the screenshot-driven feedback rounds that produced amendments A3–A6)
+and ruled that sufficient: **the gate is marked done without the 2–3
+additional target users.** Recorded as an explicit variance from the
+run-sheet above, not as the full multi-user pass succeeding. Should
+Boardwalk gain other users, re-running this sheet with them remains a
+good idea; any stumble they hit is still a spec bug by the rule above.
+
 ## Automated rehearsal already in place
 
 - The same five tasks run against the offline fixtures in

@@ -4,6 +4,8 @@
 
 The MVP is implemented: a noun-first CLI (`project`, `item`, `board`) and a full keyboard-first Bubble Tea TUI share one core service over a Go GraphQL client (`cli/go-gh`).
 
+![Boardwalk TUI: navigating a board, opening detail, toggling density, and switching boards with `[`/`]` and the `P` picker](docs/media/showcase.gif)
+
 ## Quick start
 
 ```sh
@@ -25,7 +27,7 @@ Mutations print a change summary first; use `--dry-run` to preview and `--yes` t
 - [Architecture decisions](docs/decisions/) — ADR 0001: Go (Final); ADR 0002: GitHub API via `go-gh` (Final); ADR 0003: noun-first commands (Final); ADR 0004: three-board fixtures (Final, amended by A1); ADR 0005: user-only alias config (Final); ADR 0006: full TUI in MVP (Final, amended by A1); ADR 0007: Cobra + Charm stack (Final, amended by A1); ADR 0008: TOML config (Final); ADR 0009: bare JSON + exit codes (Final); ADR 0010: upfront auth scopes (Final, amended by A1); ADR 0011: local cache and snapshot (Final); ADR 0012: permanent item deletion (Final)
 - [Specifications](docs/specs/) — [TUI specification](docs/specs/tui.md) (Final, amended by A1/A2), [CLI specification](docs/specs/cli.md) (Final, amended by A1), [Performance specification](docs/specs/performance.md) (Final), and [Mockups](docs/specs/mockups.md) (Approved 2026-10-13)
 - [Reviews and amendments](docs/reviews/) — [Beauty and speed review](docs/reviews/2026-10-13-beauty-and-speed.md) (Amendment 1, Approved 2026-10-13)
-- [VHS tapes](tapes/) — scripted recordings of the cli.md §4 human tasks; the human completion gate (owner plus 2–3 target users) remains an owner-run release step.
+- [VHS tapes](tapes/) — scripted recordings of the cli.md §4 human tasks plus the README showcase above; the human completion gate was completed by the owner (see [the run-sheet outcome](docs/reviews/human-task-gate.md)).
 
 ## Development
 
