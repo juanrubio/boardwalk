@@ -14,9 +14,9 @@
                 │ D delete       x archive                     │                
                 │ C convert draft to issue                     │                
                 │ P boards       [ ] prev/next board           │                
+                │ s sort: Priority / manual order              │                
                 │ ? this help    q quit        Esc back        │                
                 ╰──────────────────────────────────────────────╯                
-│ ▎ Fixture issue item 13              │                                        
 │ ▎ issue fixture/repo#39              │                                        
 │ ▎                                    │                                        
 ╰──────────────────────────────────────╯                                        

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -109,6 +110,7 @@ type model struct {
 	quitting  bool
 	forceQuit bool
 
+	sortOff       bool              // session-only fallback to manual order (A10)
 	boards        []githubx.Project // all visible boards; nil until fetched (A6)
 	boardsLoading bool
 	boardsErr     string
@@ -306,7 +308,67 @@ func (m *model) visibleItems() []githubx.Item {
 }
 
 func (m *model) columns() []column {
-	return buildColumns(m.visibleItems(), m.groupField, m.hasGroup, m.collapsed)
+	cols := buildColumns(m.visibleItems(), m.groupField, m.hasGroup, m.collapsed)
+	if pf, ok := m.priorityField(); ok && !m.sortOff {
+		sortColumnsByField(cols, pf)
+	}
+	return cols
+}
+
+// priorityField finds the board's Priority single-select field (A10).
+func (m *model) priorityField() (githubx.Field, bool) {
+	if m.board == nil {
+		return githubx.Field{}, false
+	}
+	for _, f := range m.board.Fields {
+		if f.DataType == "SINGLE_SELECT" && strings.EqualFold(f.Name, "Priority") {
+			return f, true
+		}
+	}
+	return githubx.Field{}, false
+}
+
+// sortedByPriority reports whether columns are Priority-sorted (A10).
+func (m *model) sortedByPriority() bool {
+	if m.sortOff {
+		return false
+	}
+	_, ok := m.priorityField()
+	return ok
+}
+
+// sortColumnsByField stably sorts each column's items by the field's
+// option order; items without a value go last (A10).
+func sortColumnsByField(cols []column, f githubx.Field) {
+	rank := make(map[string]int, len(f.Options))
+	for i, o := range f.Options {
+		rank[o.ID] = i
+		rank[o.Name] = i
+	}
+	rankOf := func(it githubx.Item) (int, bool) {
+		v, ok := it.Value(f.Name)
+		if !ok {
+			return 0, false
+		}
+		if r, ok := rank[v.OptionID]; ok {
+			return r, true
+		}
+		if r, ok := rank[v.OptionName]; ok {
+			return r, true
+		}
+		return 0, false
+	}
+	for i := range cols {
+		items := cols[i].items
+		sort.SliceStable(items, func(a, b int) bool {
+			ra, oka := rankOf(items[a])
+			rb, okb := rankOf(items[b])
+			if oka != okb {
+				return oka
+			}
+			return ra < rb
+		})
+	}
 }
 
 func (m *model) clampFocus() {

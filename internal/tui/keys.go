@@ -274,6 +274,21 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.syncKanbanToFocus()
 		}
 		return m, nil
+	case "s":
+		// Priority sort toggle, session only (A10).
+		pf, ok := m.priorityField()
+		if !ok {
+			m.footer = "No Priority field on this board — order stays manual."
+			return m, nil
+		}
+		m.sortOff = !m.sortOff
+		if m.sortOff {
+			m.footer = "Order: manual (board order)"
+		} else {
+			m.footer = "Order: sorted by " + pf.Name
+		}
+		m.clampFocus()
+		return m, nil
 	case "z":
 		m.toggleCollapse()
 		return m, nil

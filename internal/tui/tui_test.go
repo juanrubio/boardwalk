@@ -650,6 +650,68 @@ func TestDetailScrollClampsAtEnd(t *testing.T) {
 	}
 }
 
+// (A10) Columns sort by the Priority field's option order by
+// default (no priority last, ties stable); s returns to manual
+// order for the session.
+func TestPrioritySortDefaultAndToggle(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	pf, ok := m.priorityField()
+	if !ok {
+		t.Fatal("fixture board should have a Priority field")
+	}
+	cols := m.columns()
+	target := -1
+	for i, c := range cols {
+		if len(c.items) >= 4 {
+			target = i
+			break
+		}
+	}
+	if target < 0 {
+		t.Fatal("no column with 4+ items")
+	}
+	// Assign P2, none, P0, P1 across the column in board order.
+	assign := []string{"P2", "", "P0", "P1"}
+	optID := map[string]string{}
+	for _, o := range pf.Options {
+		optID[o.Name] = o.ID
+	}
+	nameOf := map[string]string{}
+	for idx, it := range cols[target].items[:4] {
+		nameOf[it.ID] = assign[idx]
+		for bi := range m.board.Items {
+			if m.board.Items[bi].ID == it.ID && assign[idx] != "" {
+				m.board.Items[bi].Values = append(m.board.Items[bi].Values, githubx.FieldValue{
+					FieldID: pf.ID, FieldName: pf.Name, DataType: pf.DataType,
+					OptionID: optID[assign[idx]], OptionName: assign[idx],
+				})
+			}
+		}
+	}
+	got := m.columns()[target].items
+	want := []string{"P0", "P1", "P2", ""}
+	for i, w := range want {
+		if nameOf[got[i].ID] != w {
+			t.Fatalf("sorted position %d = priority %q, want %q (all: %v)", i, nameOf[got[i].ID], w, nameOf)
+		}
+	}
+	m.width = 160 // indicator shows when the header has room
+	if !m.sortedByPriority() || !strings.Contains(m.View().Content, "Sorted by Priority") {
+		t.Fatal("header should show Sorted by Priority")
+	}
+	// s → manual order (original sequence), header note gone.
+	m = send(m, "s")
+	if m.sortedByPriority() {
+		t.Fatal("s should disable Priority sort")
+	}
+	got = m.columns()[target].items
+	for i, w := range assign {
+		if nameOf[got[i].ID] != w {
+			t.Fatalf("manual position %d = priority %q, want %q", i, nameOf[got[i].ID], w)
+		}
+	}
+}
+
 // (A9) With detail open, the board side shows only the focused
 // column and the pane takes the remaining width.
 func TestDetailPaneLeavesOneColumn(t *testing.T) {

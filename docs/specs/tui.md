@@ -167,6 +167,17 @@ last full page — it never wraps to the top or runs past the end.
 | `r` | Refresh the board from GitHub |
 | `P` | *(A6)* Board picker: every board you can see, filterable |
 | `[` / `]` | *(A6)* Previous / next board (wraps around) |
+| `s` | *(A10)* Toggle Priority sort / manual board order (this session) |
+
+*(A10)* **Priority sort.** When the board has a single-select field
+named `Priority`, each column is sorted by it by default: GitHub's
+option order decides (your first option is highest), items without a
+priority go last, and equal priorities keep board order. The header
+shows `Sorted by Priority`. This is display only — GitHub remains
+the source of truth for the values, so every machine shows the same
+order; nothing is written or reordered on GitHub. `s` falls back to
+manual board order for the session (never persisted). Without a
+Priority field, order is always manual.
 
 *(A6)* **Board switching (owner decision C).** `P` opens a centred
 picker listing every Projects v2 board the viewer can see (their own
@@ -775,3 +786,9 @@ build starts. The results are recorded as an amendment.
 - **A9 (2026-10-14)** — owner request: wider detail pane.
   - §2: with detail open, the board side shows only the focused
     column at its preferred width; the pane takes the rest.
+- **A10 (2026-10-14)** — owner request: Priority ordering with
+  GitHub as source of truth.
+  - §2: boards with a `Priority` single-select field sort each
+    column by its option order by default (display only, derived
+    from GitHub values, identical on every machine); `s` toggles
+    manual board order for the session only.

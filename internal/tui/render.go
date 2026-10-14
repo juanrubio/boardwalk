@@ -141,6 +141,11 @@ func (m *model) renderHeader(w int) string {
 		count = len(m.visibleItems())
 	}
 	left += fmt.Sprintf(" · %d items", count)
+	// Sort indicator last, and only when it fits without crowding
+	// out the count on narrower terminals (A10).
+	if m.sortedByPriority() && len([]rune(left))+len(" · Sorted by Priority")+25 < w {
+		left += " · Sorted by Priority"
+	}
 	if m.filter != "" {
 		left += fmt.Sprintf(" · /%s · matching %d of %d loaded", m.filter, count, len(allVisibleBase(m)))
 	}

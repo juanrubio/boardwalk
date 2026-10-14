@@ -334,6 +334,7 @@ func (m *model) renderHelp(w int) string {
 		"D delete       x archive",
 		"C convert draft to issue",
 		"P boards       [ ] prev/next board",
+		"s sort: Priority / manual order",
 		"? this help    q quit        Esc back",
 	}
 	var b strings.Builder
