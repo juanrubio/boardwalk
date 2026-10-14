@@ -131,13 +131,13 @@ fragment BoardItem on ProjectV2Item {
   fieldValues(first: 50) {
     nodes {
       __typename
-      ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2Field { id } ... on ProjectV2SingleSelectField { id } ... on ProjectV2IterationField { id } } }
-      ... on ProjectV2ItemFieldNumberValue { number field { ... on ProjectV2Field { id } ... on ProjectV2SingleSelectField { id } ... on ProjectV2IterationField { id } } }
-      ... on ProjectV2ItemFieldDateValue { date field { ... on ProjectV2Field { id } ... on ProjectV2SingleSelectField { id } ... on ProjectV2IterationField { id } } }
-      ... on ProjectV2ItemFieldSingleSelectValue { name optionId field { ... on ProjectV2Field { id } ... on ProjectV2SingleSelectField { id } ... on ProjectV2IterationField { id } } }
-      ... on ProjectV2ItemFieldIterationValue { iterationId title field { ... on ProjectV2Field { id } ... on ProjectV2SingleSelectField { id } ... on ProjectV2IterationField { id } } }
-      ... on ProjectV2ItemFieldUserValue { users(first: 10) { nodes { login } } field { ... on ProjectV2Field { id } ... on ProjectV2SingleSelectField { id } ... on ProjectV2IterationField { id } } }
-      ... on ProjectV2ItemFieldLabelValue { labels(first: 10) { nodes { name } } field { ... on ProjectV2Field { id } ... on ProjectV2SingleSelectField { id } ... on ProjectV2IterationField { id } } }
+      ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon { id name dataType } } }
+      ... on ProjectV2ItemFieldNumberValue { number field { ... on ProjectV2FieldCommon { id name dataType } } }
+      ... on ProjectV2ItemFieldDateValue { date field { ... on ProjectV2FieldCommon { id name dataType } } }
+      ... on ProjectV2ItemFieldSingleSelectValue { name optionId field { ... on ProjectV2FieldCommon { id name dataType } } }
+      ... on ProjectV2ItemFieldIterationValue { iterationId title field { ... on ProjectV2FieldCommon { id name dataType } } }
+      ... on ProjectV2ItemFieldUserValue { users(first: 10) { nodes { login } } field { ... on ProjectV2FieldCommon { id name dataType } } }
+      ... on ProjectV2ItemFieldLabelValue { labels(first: 10) { nodes { name } } field { ... on ProjectV2FieldCommon { id name dataType } } }
     }
   }
 }`

@@ -84,9 +84,13 @@ type gqlFieldValue struct {
 	OptionID    string
 	IterationID string
 	Title       string
-	Field       struct{ ID string }
-	Users       struct{ Nodes []struct{ Login string } }
-	Labels      struct{ Nodes []struct{ Name string } }
+	Field       struct {
+		ID       string
+		Name     string
+		DataType string
+	}
+	Users  struct{ Nodes []struct{ Login string } }
+	Labels struct{ Nodes []struct{ Name string } }
 }
 
 type gqlItem struct {
@@ -131,7 +135,12 @@ func (g gqlItem) toItem(fields []Field) Item {
 	for _, v := range g.FieldValues.Nodes {
 		f, ok := byID[v.Field.ID]
 		if !ok {
-			continue
+			// No schema supplied (detail fetches): the value node
+			// itself carries the field's name and data type.
+			if v.Field.Name == "" {
+				continue
+			}
+			f = Field{ID: v.Field.ID, Name: v.Field.Name, DataType: v.Field.DataType}
 		}
 		fv := FieldValue{FieldID: f.ID, FieldName: f.Name, DataType: f.DataType}
 		switch v.Typename {
@@ -403,9 +412,9 @@ func (c *gqlClient) LoadItemDetail(ctx context.Context, itemID string) (Item, er
 	if resp.Node == nil {
 		return Item{}, exiterr.NotFoundf("item %s not found", itemID)
 	}
-	// Fields metadata is not part of the item payload; values keep IDs
-	// and names resolved by callers against the board schema when
-	// needed. Detail callers fetch the board schema via LoadBoardPage.
+	// No board schema here: field values carry their own field name
+	// and data type from the payload (see itemFragment), so the item
+	// is complete enough to replace its board copy.
 	return resp.Node.toItem(nil), nil
 }
 

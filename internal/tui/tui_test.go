@@ -589,6 +589,28 @@ func TestEditorModalCursorAndArrows(t *testing.T) {
 	}
 }
 
+// Regression: a detail response carrying no field values must not
+// strip the board item's values (the item would fall out of its
+// Status column into "No Status" after merely opening detail).
+func TestDetailMsgKeepsBoardValues(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	it, ok := m.focusedItem()
+	if !ok {
+		t.Fatal("no focus")
+	}
+	before, _ := it.Value(m.groupField.Name)
+	mm, _ := m.Update(detailMsg{item: githubx.Item{ID: it.ID, Kind: it.Kind, Title: it.Title, Body: "body"}})
+	m = mm.(*model)
+	for _, bi := range m.board.Items {
+		if bi.ID == it.ID {
+			after, ok := bi.Value(m.groupField.Name)
+			if !ok || after.OptionName != before.OptionName {
+				t.Fatalf("detail replaced board values: before=%q after=%q ok=%v", before.OptionName, after.OptionName, ok)
+			}
+		}
+	}
+}
+
 // (A6) Board switching: picker selection switches in place, [ / ]
 // cycle with wrap, the board list survives a switch, late pages for a
 // board already left are ignored, and the picker filters by text.

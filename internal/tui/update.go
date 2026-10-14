@@ -76,6 +76,25 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		it := msg.item
+		// A detail payload must never strip what the board copy has:
+		// field values, content ID, and identity fall back to the
+		// existing item when the detail item lacks them.
+		if m.board != nil {
+			for _, existing := range m.board.Items {
+				if existing.ID == it.ID {
+					if len(it.Values) == 0 {
+						it.Values = existing.Values
+					}
+					if it.ContentID == "" {
+						it.ContentID = existing.ContentID
+					}
+					if it.Repo == "" {
+						it.Repo, it.Number, it.DatabaseID = existing.Repo, existing.Number, existing.DatabaseID
+					}
+					break
+				}
+			}
+		}
 		m.detail = &it
 		m.detailBody = msg.body
 		m.detailErr = ""
