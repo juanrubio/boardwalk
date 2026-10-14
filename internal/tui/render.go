@@ -261,13 +261,24 @@ func (m *model) footerHint() string {
 	return "↑↓/jk card · ←→/hl column · H/L move · Enter detail · n draft · a add · / filter · d density · P boards · q quit"
 }
 
+// detailTextWidth is the Markdown wrap width for detail bodies: the
+// A9 pane width, or near-full width below the split breakpoint.
+func (m *model) detailTextWidth() int {
+	if m.width < 90 {
+		return max(20, m.width-2)
+	}
+	return max(20, m.width-m.colWidth()-3)
+}
+
 func (m *model) renderBoardArea(w, h int) string {
-	// Detail split: board 60% / pane 40% on wide terminals (≥90), else
-	// full pane. Edit/draft/summary render as centred modals (A4).
+	// Detail split (A9): the board keeps exactly one column (the
+	// focused one, at its preferred width) and the pane takes all
+	// remaining space on wide terminals (≥90), else full pane.
+	// Edit/draft/summary render as centred modals (A4).
 	if m.pane == paneDetail && m.detail != nil {
 		if w >= 90 {
-			paneW := w * 40 / 100
-			boardW := w - paneW - 1 // 1 separator
+			boardW := m.colWidth()
+			paneW := w - boardW - 1 // 1 separator
 			board := m.renderBoard(boardW, h)
 			pane := m.renderPane(paneW, h)
 			sep := "│"

@@ -446,6 +446,7 @@ func (m *model) maybeLoadDetail() tea.Cmd {
 
 func (m *model) loadDetailCmd(itemID string) tea.Cmd {
 	svc := m.svc
+	width := m.detailTextWidth()
 	return func() tea.Msg {
 		if svc == nil || svc.Client == nil {
 			return detailMsg{err: fmt.Errorf("no GitHub client configured")}
@@ -454,7 +455,7 @@ func (m *model) loadDetailCmd(itemID string) tea.Cmd {
 		if err != nil {
 			return detailMsg{err: err}
 		}
-		body := renderBody(it.Body, 44)
+		body := renderBody(it.Body, width)
 		return detailMsg{item: it, body: body}
 	}
 }

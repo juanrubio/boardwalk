@@ -650,6 +650,27 @@ func TestDetailScrollClampsAtEnd(t *testing.T) {
 	}
 }
 
+// (A9) With detail open, the board side shows only the focused
+// column and the pane takes the remaining width.
+func TestDetailPaneLeavesOneColumn(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	m.width, m.height = 160, 40 // wide: old split showed 2+ board columns
+	m = send(m, "enter")
+	v := m.View().Content
+	if !strings.Contains(v, "Backlog (") {
+		t.Fatalf("focused column should remain visible:\n%s", v)
+	}
+	for _, other := range []string{"Ready (", "In Progress ("} {
+		if strings.Contains(v, other) {
+			t.Fatalf("detail split should hide other columns (%s):\n%s", other, v)
+		}
+	}
+	it, _ := m.focusedItem()
+	if !strings.Contains(v, it.Title) {
+		t.Fatalf("pane should show the item:\n%s", v)
+	}
+}
+
 // (A7) C on a draft opens the repo prompt (pre-filled with the
 // board's single repo); Enter converts and the card stays an issue.
 func TestConvertDraftFlow(t *testing.T) {

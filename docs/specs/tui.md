@@ -97,6 +97,12 @@ board focus stays on the board: `j/k/h/l` keep moving between cards and
 the pane follows the focused card. `Tab` moves focus into the pane (to
 scroll a long body) and back. Bodies load lazily and are prefetched for
 neighbours (performance.md §2), so the pane stays responsive.
+*(A9)* **Detail split width.** When the detail pane is open, the
+board side keeps exactly one column — the focused card's column, at
+its preferred width (36 comfortable / 31 compact) — and the pane
+takes all remaining horizontal space, so detail text gets maximum
+real estate. Below 90 columns the pane still takes the full width.
+
 *(A8)* Pane focus is visible: while the pane has focus its title
 carries a `▸` marker in the focus colour and the board/pane separator
 is drawn thick in the focus colour; `Enter` with focus on the board
@@ -294,9 +300,10 @@ recorded in [mockups.md](mockups.md).
   project in the same config section as `group_by`:
   `collapsed = ["Done"]`. Focusing a collapsed column and pressing `z`
   expands it.
-- **Detail pane:** `Enter` (§2) opens detail as a right-hand pane at
-  roughly 40% of the width on wide terminals; the board remains visible
-  and focused-column context is preserved behind it. Below the wide
+- **Detail pane:** `Enter` (§2) opens detail as a right-hand pane;
+  the board side keeps only the focused column at its preferred
+  width and the pane takes all remaining space *(A9, superseding the
+  original ~40% rule)*. Below the wide
   breakpoint the pane takes the full screen. The exact breakpoint is an
   implementation detail to validate at 80, 120, and 200 columns against
   the ADR 0004 fixtures; the rule — split when readable, full-screen
@@ -765,3 +772,6 @@ build starts. The results are recorded as an amendment.
   - §2: pane focus is visible (`▸` title marker and thick focus-colour
     separator while the pane has focus); `Enter` with focus on the
     board dismisses the pane.
+- **A9 (2026-10-14)** — owner request: wider detail pane.
+  - §2: with detail open, the board side shows only the focused
+    column at its preferred width; the pane takes the rest.
