@@ -147,6 +147,28 @@ identically). *(A1)* A fifth, `--no-cache`, was added:
 | `--dry-run` | Print the planned mutation/change summary; change nothing. Valid on every mutation; harmless elsewhere. |
 | `--yes` | Skip interactive confirmation for a mutation the user has explicitly authorised. Never skips validation or ambiguity checks (§1). |
 | `--no-cache` | *(A1)* Bypass the local schema cache and board snapshot for this run ([ADR 0011](../decisions/0011-local-cache-and-snapshot.md)); `BOARDWALK_NO_CACHE=1` is equivalent. |
+| `--account <user>` | *(A11)* Use this GitHub account instead of `gh`'s active one; `BOARDWALK_ACCOUNT` is equivalent (flag wins). See "GitHub accounts" below. |
+
+### GitHub accounts *(A11)*
+
+Boardwalk authenticates through `gh` and never stores tokens
+(ADR 0010). The required scopes are prescribed once per account:
+
+```sh
+gh auth login                        # once per account
+gh auth refresh -s project,repo      # grants the scopes Boardwalk needs
+```
+
+By default the account `gh` has active is used. On machines where
+`gh` holds several accounts (for example a personal and an employer
+account, with the employer one active), `--account <user>` (or
+`BOARDWALK_ACCOUNT=<user>`) selects another account for the whole
+run: Boardwalk obtains that account's token via
+`gh auth token --user <user>` and uses it for every request and for
+the upfront scope check, leaving `gh`'s active account untouched.
+If the named account is not logged in, Boardwalk fails with exit 3
+and the `gh auth login` remediation. `gh auth switch` is never
+performed implicitly.
 
 Script-safety rules:
 
@@ -301,3 +323,10 @@ Changes from here require a spec amendment, not a silent edit.
 - **A2 (2026-10-13)** — mockup beauty-review fixes:
   - §5: the reference column never truncates; at 80 columns `KIND` and
     `REPOSITORY` are dropped before anything else truncates.
+- **A11 (2026-10-15)** — owner request: work as a non-default
+  GitHub account.
+  - §3: `--account <user>` / `BOARDWALK_ACCOUNT` selects the `gh`
+    account for the run (token via `gh auth token --user`, scope
+    check included) without switching `gh`'s active account; the
+    `gh auth login` + `gh auth refresh -s project,repo` prescription
+    is written down in the new "GitHub accounts" section.

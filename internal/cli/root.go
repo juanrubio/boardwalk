@@ -22,6 +22,7 @@ var Version = "dev"
 // Options carries the persistent global flags (cli.md Section 3).
 type Options struct {
 	Project string
+	Account string // gh account to act as; "" = gh's active (A11)
 	JSON    bool
 	DryRun  bool
 	Yes     bool
@@ -36,6 +37,15 @@ type Options struct {
 	// tests can substitute fixture-backed services. cmd/boardwalk
 	// sets it to the real go-gh-backed factory.
 	NewService func(opts *Options) (*core.Service, error)
+}
+
+// AccountName resolves the account selection: --account flag wins
+// over BOARDWALK_ACCOUNT; empty means gh's active account (A11).
+func (o *Options) AccountName() string {
+	if o.Account != "" {
+		return o.Account
+	}
+	return os.Getenv("BOARDWALK_ACCOUNT")
 }
 
 // NewRootCmd builds the full command tree.
@@ -64,6 +74,7 @@ tokens. Run 'boardwalk project list' to find a board, then
 	}
 	pf := root.PersistentFlags()
 	pf.StringVar(&opts.Project, "project", "", "project alias, URL, or owner/number (overrides BOARDWALK_PROJECT and the saved default)")
+	pf.StringVar(&opts.Account, "account", "", "GitHub account to act as, instead of gh's active account (overrides BOARDWALK_ACCOUNT)")
 	pf.BoolVar(&opts.JSON, "json", false, "print bare JSON (no envelope) for scripts")
 	pf.BoolVar(&opts.DryRun, "dry-run", false, "print the planned change and change nothing")
 	pf.BoolVar(&opts.Yes, "yes", false, "skip interactive confirmation (never skips validation)")

@@ -23,7 +23,11 @@ func main() {
 		if c != nil {
 			c.Prune()
 		}
-		return core.New(githubx.NewClient(), cfg, c), nil
+		client := githubx.NewClient()
+		if acct := o.AccountName(); acct != "" {
+			client = githubx.NewClientForAccount(acct)
+		}
+		return core.New(client, cfg, c), nil
 	}
 	os.Exit(cli.Execute(opts))
 }

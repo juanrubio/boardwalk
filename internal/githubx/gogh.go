@@ -21,12 +21,32 @@ type gqlDoer interface {
 // gqlClient is the go-gh-backed GraphQL client (ADR 0002): credentials
 // resolve from gh's own store and never pass through Boardwalk files.
 type gqlClient struct {
-	mu   sync.Mutex
-	doer gqlDoer
+	mu      sync.Mutex
+	doer    gqlDoer
+	account string // gh account to act as; "" = gh's active account (A11)
 }
 
 // NewClient returns the GitHub-backed Client.
 func NewClient() Client { return &gqlClient{} }
+
+// NewClientForAccount returns a Client that acts as the named gh
+// account for every request (A11), without changing gh's active
+// account. The account's token comes from `gh auth token --user`.
+func NewClientForAccount(account string) Client { return &gqlClient{account: account} }
+
+// accountToken resolves an account's token via gh; a variable so
+// tests can substitute it.
+var accountToken = func(account string) (string, error) {
+	exe, err := exec.LookPath("gh")
+	if err != nil {
+		return "", err
+	}
+	out, err := exec.Command(exe, "auth", "token", "--user", account).Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(out)), nil
+}
 
 func (c *gqlClient) gql() (gqlDoer, error) {
 	c.mu.Lock()
@@ -34,7 +54,16 @@ func (c *gqlClient) gql() (gqlDoer, error) {
 	if c.doer != nil {
 		return c.doer, nil
 	}
-	client, err := ghapi.NewGraphQLClient(ghapi.ClientOptions{})
+	opts := ghapi.ClientOptions{}
+	if c.account != "" {
+		token, err := accountToken(c.account)
+		if err != nil || token == "" {
+			return nil, exiterr.Authf("gh has no token for account %q", c.account).
+				WithRemediation("Run `gh auth login`, then `gh auth refresh -s project,repo`.")
+		}
+		opts.AuthToken = token
+	}
+	client, err := ghapi.NewGraphQLClient(opts)
 	if err != nil {
 		return nil, exiterr.Authf("GitHub CLI session unavailable: %v", err).
 			WithRemediation("Install gh and run `gh auth login`, then `gh auth refresh -s project,repo`.")
@@ -52,6 +81,14 @@ func (c *gqlClient) CheckAuth(_ context.Context) error {
 			WithRemediation("Install gh from https://cli.github.com, then run `gh auth login` and `gh auth refresh -s project,repo`.")
 	}
 	host, _ := ghauth.DefaultHost()
+	if c.account != "" {
+		token, err := accountToken(c.account)
+		if err != nil || token == "" {
+			return exiterr.Authf("gh has no token for account %q on %s", c.account, host).
+				WithRemediation("Run `gh auth login`, then `gh auth refresh -s project,repo`.")
+		}
+		return nil
+	}
 	token, _ := ghauth.TokenForHost(host)
 	if token == "" {
 		return exiterr.Authf("gh is not authenticated for %s", host).

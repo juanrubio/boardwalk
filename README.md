@@ -21,6 +21,15 @@ That is the only setup. Boardwalk asks `gh` for access each time it runs and sto
 
 Prefer building from source? With Go installed: `go build -o boardwalk ./cmd/boardwalk`.
 
+**More than one GitHub account?** If `gh` holds several accounts (say a personal and an employer one) and the wrong one is active, leave it alone and tell Boardwalk which to use:
+
+```sh
+boardwalk --account juanrubio board
+BOARDWALK_ACCOUNT=juanrubio boardwalk item list
+```
+
+Boardwalk borrows that account's token from `gh` for the run and checks its scopes the same way; `gh`'s active account is never switched. Each account needs the one-time setup above (`gh auth login`, then `gh auth refresh -s project,repo` while that account is active).
+
 ## Quick start
 
 ```sh
