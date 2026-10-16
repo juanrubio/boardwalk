@@ -8,8 +8,8 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // column is one kanban column: a grouping option (or the no-value group).

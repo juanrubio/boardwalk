@@ -11,7 +11,7 @@ import (
 
 	"github.com/pelletier/go-toml/v2"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
 )
 
 // UIPrefs holds per-project TUI view preferences (tui.md Section 1/3).

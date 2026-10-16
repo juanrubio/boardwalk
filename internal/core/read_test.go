@@ -3,7 +3,7 @@ package core
 import (
 	"testing"
 
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 func boardFixture() *githubx.Board {

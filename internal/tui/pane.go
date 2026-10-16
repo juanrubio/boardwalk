@@ -7,9 +7,9 @@ import (
 	glamour "charm.land/glamour/v2"
 	"charm.land/lipgloss/v2"
 
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
-	"github.com/juanrubio/gh-boardwalk/internal/theme"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/theme"
 )
 
 // renderBody renders Markdown with Glamour; falls back to plain text.

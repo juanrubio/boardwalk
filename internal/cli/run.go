@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 
-	"github.com/juanrubio/gh-boardwalk/internal/tui"
+	"github.com/juanrubio/boardwalk/internal/tui"
 )
 
 // Command runners. The read path is implemented in run_read.go and the

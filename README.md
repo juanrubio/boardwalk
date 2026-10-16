@@ -8,7 +8,7 @@ Boardwalk lets you read and update GitHub Projects (Projects v2) boards without 
 
 ## Install
 
-1. Download the binary for your system from the [releases page](https://github.com/juanrubio/gh-boardwalk/releases), and check it against `SHA256SUMS` if you like.
+1. Download the binary for your system from the [releases page](https://github.com/juanrubio/boardwalk/releases), and check it against `SHA256SUMS` if you like.
 2. Rename it to `boardwalk` and put it somewhere on your `PATH` (for example `~/.local/bin`).
 3. Make sure the GitHub CLI is set up with the scopes Boardwalk needs:
 

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // Change is one planned field/title/body change with display values

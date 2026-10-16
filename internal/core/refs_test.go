@@ -3,8 +3,8 @@ package core
 import (
 	"testing"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 func fixtureBoard() *githubx.Board {

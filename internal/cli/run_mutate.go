@@ -10,9 +10,9 @@ import (
 
 	"charm.land/huh/v2"
 
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // isTTY reports whether w is a terminal file.

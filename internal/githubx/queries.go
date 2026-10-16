@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
 )
 
 // ---- GraphQL response shapes -------------------------------------------

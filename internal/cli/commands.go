@@ -3,7 +3,7 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
 )
 
 // Command constructors. Behaviour is implemented incrementally per the

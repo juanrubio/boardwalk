@@ -9,9 +9,9 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/colorprofile"
 
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
-	"github.com/juanrubio/gh-boardwalk/internal/theme"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/theme"
 )
 
 // RunOptions configures a TUI session.

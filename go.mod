@@ -1,4 +1,4 @@
-module github.com/juanrubio/gh-boardwalk
+module github.com/juanrubio/boardwalk
 
 go 1.27.2
 

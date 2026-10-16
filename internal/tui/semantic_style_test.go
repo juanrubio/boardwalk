@@ -8,7 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 	uv "github.com/charmbracelet/ultraviolet"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/juanrubio/gh-boardwalk/internal/theme"
+	"github.com/juanrubio/boardwalk/internal/theme"
 )
 
 func TestSemanticPaneAndFormRendering(t *testing.T) {

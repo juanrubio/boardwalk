@@ -1,6 +1,6 @@
 # Boardwalk — Product Requirements Document
 
-**Repository:** gh-boardwalk  
+**Repository:** boardwalk  
 **Working name / executable:** Boardwalk / boardwalk  
 **Status:** Initial product brief (draft)  
 **Date:** 2026-10-13

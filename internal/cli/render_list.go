@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // renderItemList implements cli.md Section 5: aligned tables on TTYs

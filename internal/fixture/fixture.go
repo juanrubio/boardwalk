@@ -15,8 +15,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // Client is a fixture-backed githubx.Client.

@@ -11,9 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/juanrubio/gh-boardwalk/internal/config"
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/config"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
 )
 
 // Version is set at release time via -ldflags.

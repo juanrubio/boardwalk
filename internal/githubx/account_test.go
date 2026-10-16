@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
 )
 
 // (A11) Account clients resolve the named account's token via gh

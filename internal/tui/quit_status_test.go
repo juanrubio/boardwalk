@@ -8,7 +8,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/juanrubio/gh-boardwalk/internal/theme"
+	"github.com/juanrubio/boardwalk/internal/theme"
 )
 
 func isQuitCommand(cmd tea.Cmd) bool {

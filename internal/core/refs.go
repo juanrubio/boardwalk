@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // ResolveItemRef resolves a cli.md Section 1 item reference within a

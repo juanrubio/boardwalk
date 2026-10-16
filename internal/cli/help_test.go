@@ -8,9 +8,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/juanrubio/gh-boardwalk/internal/config"
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/fixture"
+	"github.com/juanrubio/boardwalk/internal/config"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/fixture"
 )
 
 // Help surface (cli.md §4): every command states purpose, syntax and an

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/juanrubio/gh-boardwalk/internal/config"
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/fixture"
+	"github.com/juanrubio/boardwalk/internal/config"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/fixture"
 )
 
 func fixtureOptions(t *testing.T, jsonOut bool) (*Options, *bytes.Buffer) {

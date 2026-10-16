@@ -9,7 +9,7 @@ import (
 	ghapi "github.com/cli/go-gh/v2/pkg/api"
 	ghauth "github.com/cli/go-gh/v2/pkg/auth"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
 )
 
 // gqlDoer is the subset of go-gh's GraphQLClient we use, so decoding

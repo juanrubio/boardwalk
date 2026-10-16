@@ -8,8 +8,8 @@ import (
 
 	"github.com/cli/browser"
 
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // repaintCmd forces the renderer to repaint the whole frame. The

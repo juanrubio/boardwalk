@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
 )
 
 func runCmd(t *testing.T, opts *Options, args ...string) error {

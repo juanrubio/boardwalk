@@ -9,7 +9,7 @@ import (
 
 	ghapi "github.com/cli/go-gh/v2/pkg/api"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
 )
 
 // ---- Content resolution --------------------------------------------------

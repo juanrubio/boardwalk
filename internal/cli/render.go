@@ -9,8 +9,8 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
-	"github.com/juanrubio/gh-boardwalk/internal/theme"
+	"github.com/juanrubio/boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/theme"
 )
 
 // colorMode resolves cli.md Section 5 colour behaviour:

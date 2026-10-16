@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
-	"github.com/juanrubio/gh-boardwalk/internal/theme"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/theme"
 )
 
 var updateGolden = flag.Bool("update-golden", false, "update golden frames")

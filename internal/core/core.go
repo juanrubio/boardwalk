@@ -7,10 +7,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/juanrubio/gh-boardwalk/internal/cache"
-	"github.com/juanrubio/gh-boardwalk/internal/config"
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/cache"
+	"github.com/juanrubio/boardwalk/internal/config"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // Service wires the GitHub client, config, and cache together.

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 const snapshotVersion = 1

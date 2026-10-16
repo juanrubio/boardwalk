@@ -7,10 +7,10 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/juanrubio/gh-boardwalk/internal/config"
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/config"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // itemJSON is the stable --json shape for items (ADR 0009: bare array,

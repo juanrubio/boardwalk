@@ -10,9 +10,9 @@ import (
 
 	"github.com/cli/browser"
 
-	"github.com/juanrubio/gh-boardwalk/internal/cache"
-	"github.com/juanrubio/gh-boardwalk/internal/core"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/cache"
+	"github.com/juanrubio/boardwalk/internal/core"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/juanrubio/gh-boardwalk/internal/exiterr"
-	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/boardwalk/internal/exiterr"
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 // ListProjects discovers Projects v2 (optionally restricted to an owner).
