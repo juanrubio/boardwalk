@@ -46,7 +46,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.overlay == overlayBoards {
 				return m, nil
 			}
-			m.footer = "Boards failed: " + msg.err.Error()
+			m.setFooter(statusError, "Boards failed: "+msg.err.Error())
 			return m, nil
 		}
 		m.boards = msg.projects
@@ -142,7 +142,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.summary.pendingRetry = nil
 			m.applySummaryLocally(msg.results)
 			if !anyFailed(m.summary.results) {
-				m.footer = "Saved."
+				m.setFooter(statusSuccess, "Saved.")
 			}
 		}
 		m.savingMsg = ""
@@ -150,7 +150,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case archiveResultMsg:
 		m.overlay = overlayNone
 		if msg.err != nil {
-			m.footer = "Archive failed: " + msg.err.Error()
+			m.setFooter(statusError, "Archive failed: "+msg.err.Error())
 			return m, nil
 		}
 		if it, ok := m.focusedItem(); ok {
@@ -158,11 +158,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.pane = paneNone
 		m.clampFocus()
-		m.footer = "Archived."
+		m.setFooter(statusSuccess, "Archived.")
 		return m, nil
 	case convertResultMsg:
 		if msg.err != nil {
-			m.footer = "Convert failed: " + msg.err.Error()
+			m.setFooter(statusError, "Convert failed: "+msg.err.Error())
 			return m, nil
 		}
 		if m.board != nil {
@@ -176,13 +176,13 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.replaceItem(msg.item)
 		m.rebuildFocus()
 		m.setFocusedByID(msg.item.ID)
-		m.footer = "Converted → " + msg.item.Ref()
+		m.setFooter(statusSuccess, "Converted → "+msg.item.Ref())
 		return m, nil
 	case deleteResultMsg:
 		m.overlay = overlayNone
 		m.deleteStage = 0
 		if msg.err != nil {
-			m.footer = "Delete failed: " + msg.err.Error()
+			m.setFooter(statusError, "Delete failed: "+msg.err.Error())
 			return m, nil
 		}
 		if it, ok := m.focusedItem(); ok {
@@ -190,11 +190,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.pane = paneNone
 		m.clampFocus()
-		m.footer = "Deleted."
+		m.setFooter(statusSuccess, "Deleted.")
 		return m, nil
 	case draftResultMsg:
 		if msg.err != nil {
-			m.footer = "Create failed: " + msg.err.Error()
+			m.setFooter(statusError, "Create failed: "+msg.err.Error())
 			if m.summary != nil {
 				m.summary.err = msg.err.Error()
 			}
@@ -204,31 +204,31 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pane, m.form, m.summary = paneNone, nil, nil
 		m.rebuildFocus()
 		m.setFocusedByID(msg.item.ID)
-		m.footer = "Created " + msg.item.Ref()
+		m.setFooter(statusSuccess, "Created "+msg.item.Ref())
 		return m, nil
 	case addResultMsg:
 		m.overlay = overlayNone
 		if msg.err != nil {
-			m.footer = "Add failed: " + msg.err.Error()
+			m.setFooter(statusError, "Add failed: "+msg.err.Error())
 			return m, nil
 		}
 		if msg.already {
-			m.footer = msg.item.Ref() + " is already on this project."
+			m.setFooter(statusInfo, msg.item.Ref()+" is already on this project.")
 			return m, nil
 		}
 		m.replaceItem(msg.item)
 		m.rebuildFocus()
 		m.setFocusedByID(msg.item.ID)
-		m.footer = "Added " + msg.item.Ref()
+		m.setFooter(statusSuccess, "Added "+msg.item.Ref())
 		return m, nil
 	case editorDoneMsg:
 		if msg.err != nil {
-			m.footer = "Editor failed: " + msg.err.Error()
+			m.setFooter(statusError, "Editor failed: "+msg.err.Error())
 			return m, nil
 		}
 		if m.form != nil && msg.fieldIdx >= 0 && msg.fieldIdx < len(m.form.fields) {
 			m.form.fields[msg.fieldIdx].setValue(msg.body)
-			m.footer = "Body updated from editor."
+			m.setFooter(statusInfo, "Body updated from editor.")
 		}
 		return m, nil
 	case tea.KeyPressMsg:
@@ -255,11 +255,11 @@ func (m *model) onPage(msg pageMsg) (tea.Model, tea.Cmd) {
 		m.loading = false
 		if m.stale && m.board != nil && len(m.board.Items) > 0 {
 			m.loadErr = msg.err.Error()
-			m.footer = "Refresh failed: " + msg.err.Error() + " (showing snapshot; r retries)"
+			m.setFooter(statusError, "Refresh failed: "+msg.err.Error()+" (showing snapshot; r retries)")
 			return m, nil
 		}
 		m.loadErr = msg.err.Error()
-		m.footer = msg.err.Error()
+		m.setFooter(statusError, msg.err.Error())
 		return m, nil
 	}
 	focusID := ""
@@ -298,11 +298,13 @@ func (m *model) onMoveResult(msg moveResultMsg) (tea.Model, tea.Cmd) {
 		p.inFlight = false
 	}
 	if msg.err != nil {
+		// A failed write keeps the app open so its outcome stays visible.
+		m.quitting = false
 		// Roll back to last confirmed value.
 		if p != nil {
 			m.setItemGroupValue(msg.itemID, p.confirmed, "")
 			m.failed[msg.itemID] = msg.err.Error()
-			m.footer = "Move failed: " + msg.err.Error()
+			m.setFooter(statusError, "Move failed: "+msg.err.Error())
 			delete(m.pending, msg.itemID)
 		}
 		m.clampFocus()
@@ -369,11 +371,11 @@ func (m *model) setItemGroupValue(itemID, optName, optID string) {
 // doMove performs an optimistic H/L move (dir -1/+1).
 func (m *model) doMove(dir int) tea.Cmd {
 	if m.stale {
-		m.footer = "Showing snapshot — moves are available once live data arrives."
+		m.setFooter(statusWarning, "Showing snapshot — moves are available once live data arrives.")
 		return nil
 	}
 	if !m.hasGroup {
-		m.footer = "No grouping field to move on."
+		m.setFooter(statusWarning, "No grouping field to move on.")
 		return nil
 	}
 	it, ok := m.focusedItem()
@@ -398,7 +400,7 @@ func (m *model) doMove(dir int) tea.Cmd {
 	}
 	target := cur + dir
 	if target < 0 || target >= len(cols) {
-		m.footer = "Already at the " + map[bool]string{true: "first", false: "last"}[dir < 0] + " column."
+		m.setFooter(statusInfo, "Already at the "+map[bool]string{true: "first", false: "last"}[dir < 0]+" column.")
 		return nil
 	}
 	tc := cols[target]
@@ -458,7 +460,7 @@ func (m *model) flushMove(itemID string) tea.Cmd {
 
 func (m *model) doUndo() tea.Cmd {
 	if len(m.undo) == 0 {
-		m.footer = "Nothing to undo."
+		m.setFooter(statusInfo, "Nothing to undo.")
 		return nil
 	}
 	e := m.undo[len(m.undo)-1]

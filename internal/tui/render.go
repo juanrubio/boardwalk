@@ -22,7 +22,11 @@ func (m *model) View() tea.View {
 		w, h = 80, 24
 	}
 	var content string
-	if w < 60 || h < 15 {
+	if (w < 60 || h < 15) && m.overlay == overlayQuitDirty {
+		content = m.renderCompactQuitDirty(w, h)
+	} else if (w < 60 || h < 15) && m.overlay == overlayQuit {
+		content = m.renderCompactQuit(w, h)
+	} else if w < 60 || h < 15 {
 		content = m.viewTooSmall(w, h)
 	} else {
 		content = m.viewMain(w, h)
@@ -69,6 +73,8 @@ func (m *model) viewMain(w, h int) string {
 		body = m.overlayCenter(body, m.renderSummaryModal(), w, bodyH)
 	}
 	switch m.overlay {
+	case overlayQuit:
+		body = m.overlayCenter(body, m.renderQuitModal(w), w, bodyH)
 	case overlayHelp:
 		body = m.overlayCenter(body, m.renderHelp(w), w, bodyH)
 	case overlayArchive:
@@ -191,79 +197,6 @@ func allVisibleBase(m *model) []githubx.Item {
 	}
 	_ = n
 	return m.board.Items
-}
-
-func (m *model) renderFooter(w int) string {
-	if m.footer != "" {
-		// transient footer message takes precedence, still show keys after ·
-		msg := m.footer
-		hint := m.footerHint()
-		s := msg
-		if hint != "" {
-			s = msg + " · " + hint
-		}
-		return truncateRunes(s, w)
-	}
-	return truncateRunes(m.footerHint(), w)
-}
-
-func (m *model) footerHint() string {
-	switch m.overlay {
-	case overlayHelp:
-		return "? close help · Esc back"
-	case overlayArchive:
-		return "y archive (not optimistic) · any other key cancels"
-	case overlayDelete:
-		if m.deleteStage == 1 {
-			return "y again to permanently delete · any other key cancels"
-		}
-		return "y confirm deletion · any other key cancels"
-	case overlayGroup:
-		return "↑↓ pick grouping · Enter apply · Esc cancel"
-	case overlayBoards:
-		return "↑↓ pick board · type to filter · Enter switch · Esc cancel"
-	case overlaySearch:
-		return "Enter keep filter · Esc clear filter"
-	case overlayAdd:
-		return "Enter add · Esc cancel"
-	case overlayConvert:
-		return "Enter convert draft to issue · Esc cancel"
-	case overlayDiscard:
-		return "y discard changes · any other key keep editing"
-	case overlayQuitDirty:
-		return "y quit and discard · any other key stay"
-	}
-	switch m.pane {
-	case paneSummary:
-		if m.summary != nil && m.summary.sent && anyFailed(m.summary.results) {
-			return "Enter retry failed · e back to form · Esc back (asks before discarding)"
-		}
-		if m.savingMsg != "" {
-			return m.savingMsg
-		}
-		return "Enter confirm & save · e back to form · Esc back"
-	case paneEdit, paneNewDraft:
-		if m.form != nil && m.form.picker {
-			return "↑↓ choose · Enter select · Esc cancel picker"
-		}
-		dirty := ""
-		if m.form != nil && m.form.dirtyCount() > 0 {
-			dirty = fmt.Sprintf(" · %d changes · Ctrl-S review & save", m.form.dirtyCount())
-		}
-		return "Type to edit · ←→ cursor · Tab/↑↓ field · Enter pick · Ctrl-E $EDITOR · Ctrl-S review & save · Esc back" + dirty
-	case paneDetail:
-		if m.paneFocus {
-			return "↑↓/jk scroll · Tab board · Esc close pane"
-		}
-		return "↑↓/jk board · Tab pane · Enter/Esc close pane · H/L move · e edit · x archive"
-	}
-	if m.stale {
-		return "Showing snapshot — moves wait for live data · ↑↓/jk card · ←→/hl column · Enter detail · q quit"
-	}
-	if m.view == viewList {
-		return "↑↓ row · Enter detail · H/L move · e edit · v kanban · / filter · q quit"
-	}
-	return "↑↓/jk card · ←→/hl column · H/L move · Enter detail · n draft · a add · / filter · d density · P boards · q quit"
 }
 
 // detailTextWidth is the Markdown wrap width for detail bodies: the

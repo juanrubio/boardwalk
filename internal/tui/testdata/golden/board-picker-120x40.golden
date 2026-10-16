@@ -15,12 +15,12 @@
 │ ▎ issue fixture/repo#18              │                                                                                
 │ ▎                                    │                                                                                
 ╰──────────────────────────────────────╯                                                                                
-                                ╭──────────────────────────────────────────────────────╮                                
-                                │ ─ Boards ──────────────────────────────────────────  │                                
-                                │     fixture-org/7 — Org Roadmap                      │                                
-                                │ ▸ • fixture-user/1 — SnazzyEmail (fixture)           │                                
-                                │     fixture-user/3 — Life Board                      │                                
-                                ╰──────────────────────────────────────────────────────╯                                
+                                [1m╭──────────────────────────────────────────────────────╮[m                                
+                                [1m│[m [1mProjects / Boards[m                                    [1m│[m                                
+                                [1m│[m   [1mfixture-org/7[m — Org Roadmap                        [1m│[m                                
+                                [1m│[m [1m▸ • fixture-user/1 [current]  — SnazzyEmail (fixtur…[m [1m│[m                                
+                                [1m│[m   [1mfixture-user/3[m — Life Board                        [1m│[m                                
+                                [1m╰──────────────────────────────────────────────────────╯[m                                
                                                                                                                         
                                                                                                                         
                                                                                                                         
@@ -37,4 +37,4 @@
                                                                                                                         
                                                                                                                         
                                                                                                                         
-↑↓ pick board · type to filter · Enter switch · Esc cancel
+[1m↑↓[m pick board · type to filter · [1mEnter[m switch · [1mEsc[m cancel

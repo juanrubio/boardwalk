@@ -28,7 +28,8 @@ func TestTeatestProgramPaintsAndQuits(t *testing.T) {
 	}, teatest.WithCheckInterval(50*time.Millisecond), teatest.WithDuration(5*time.Second))
 
 	tm.Send(tea.KeyPressMsg{Code: 'q', Text: "q"}) // closes help
-	tm.Send(tea.KeyPressMsg{Code: 'q', Text: "q"}) // quits board
+	tm.Send(tea.KeyPressMsg{Code: 'q', Text: "q"}) // opens quit confirmation
+	tm.Send(tea.KeyPressMsg{Code: 'y', Text: "y"}) // confirms quit
 	tm.WaitFinished(t, teatest.WithFinalTimeout(5*time.Second))
 
 	out, err := io.ReadAll(tm.FinalOutput(t))

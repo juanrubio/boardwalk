@@ -9,18 +9,27 @@ import (
 
 	"github.com/juanrubio/gh-boardwalk/internal/core"
 	"github.com/juanrubio/gh-boardwalk/internal/githubx"
+	"github.com/juanrubio/gh-boardwalk/internal/theme"
 )
 
 // renderBody renders Markdown with Glamour; falls back to plain text.
 // Runs inside a tea.Cmd (off the UI loop) per performance.md §3.
-func renderBody(body string, width int) string {
+func renderBody(body string, width int, themes ...*theme.Theme) string {
+	style := "dark"
+	if len(themes) > 0 && themes[0] != nil {
+		if themes[0].Mono {
+			style = "ascii"
+		} else if !themes[0].Dark {
+			style = "light"
+		}
+	}
 	if strings.TrimSpace(body) == "" {
 		return ""
 	}
 	if width < 20 {
 		width = 20
 	}
-	r, err := glamour.NewTermRenderer(glamour.WithStylePath("dark"), glamour.WithWordWrap(width))
+	r, err := glamour.NewTermRenderer(glamour.WithStylePath(style), glamour.WithWordWrap(width))
 	if err != nil {
 		return body
 	}
@@ -57,9 +66,9 @@ func (m *model) renderDetail(w, h int) string {
 	}
 	b.WriteString(strings.Repeat("─", min(w, 45)) + "\n")
 	kindRef := string(it.Kind) + " · " + it.Ref()
-	fmt.Fprintf(&b, "Kind:     %s\n", kindRef)
+	b.WriteString(m.theme.Meta.Render("Kind:     ") + m.theme.KeyHint.Render(kindRef) + "\n")
 	if it.URL != "" {
-		fmt.Fprintf(&b, "URL:      %s\n", it.URL)
+		b.WriteString(m.theme.Meta.Render("URL:      ") + m.theme.KeyHint.Render(it.URL) + "\n")
 	}
 	if m.board != nil {
 		for _, f := range m.board.Fields {
@@ -70,13 +79,13 @@ func (m *model) renderDetail(w, h int) string {
 			if v, ok := it.Value(f.Name); ok {
 				val = core.DisplayValue(v)
 				if f.DataType == "SINGLE_SELECT" {
-					val = "● " + val
+					val = m.theme.Stripe(m.fieldOptionColor(f.Name, val)).Render("● " + val)
 				}
 				if v.Date != nil {
 					val = fmt.Sprintf("%s (%s)", val, relDate(*v.Date))
 				}
 			}
-			fmt.Fprintf(&b, "%-10s %s\n", f.Name+":", val)
+			b.WriteString(m.theme.Meta.Render(fmt.Sprintf("%-10s ", f.Name+":")) + val + "\n")
 		}
 	}
 	if reason, ok := m.failed[it.ID]; ok {
@@ -126,7 +135,10 @@ func (m *model) modalBox(content string, mw, mh int) string {
 		Padding(0, 1).
 		Width(mw).
 		MaxHeight(mh)
-	return style.Render(content)
+	if !m.theme.Mono {
+		style = style.Background(m.theme.Tokens.Surface)
+	}
+	return m.theme.Surface(style.Render(content))
 }
 
 func (m *model) renderForm(w, h int) string {
@@ -145,7 +157,11 @@ func (m *model) renderForm(w, h int) string {
 	if !f.isDraft && f.dirtyCount() > 0 {
 		hdr += fmt.Sprintf("  (%d changes)", f.dirtyCount())
 	}
-	b.WriteString(m.theme.Title.Render(truncateRunes(hdr, w)) + "\n")
+	b.WriteString(m.theme.KeyHint.Render(truncateRunes(title, w)))
+	if hdr != title {
+		b.WriteString(lipgloss.NewStyle().Foreground(m.theme.Tokens.Warning).Render(strings.TrimPrefix(hdr, title)))
+	}
+	b.WriteString("\n")
 	b.WriteString(strings.Repeat("─", min(w, 64)) + "\n")
 	labelW := 12
 	for i := range f.fields {
@@ -164,16 +180,17 @@ func (m *model) renderForm(w, h int) string {
 		}
 		dirty := ""
 		if ff.value() != ff.oldDisp {
-			dirty = " ●"
+			dirty = lipgloss.NewStyle().Foreground(m.theme.Tokens.Warning).Bold(true).Render(" ●")
 		}
-		label := fmt.Sprintf("%s%-*s", focus, labelW, ff.name+":")
+		label := m.fieldLabel(fmt.Sprintf("%s%-*s", focus, labelW, ff.name+":"), i == f.idx)
 		if ff.kind == "body" {
 			block := []string{label + dirty}
+			m.styleArea(ff)
 			for _, l := range strings.Split(ff.area.View(), "\n") {
 				block = append(block, "  "+l)
 			}
 			if ff.err != "" {
-				block = append(block, "  ✗ "+ff.err)
+				block = append(block, m.theme.Error.Render("  ✗ "+ff.err))
 			}
 			blocks[i] = block
 			continue
@@ -186,22 +203,22 @@ func (m *model) renderForm(w, h int) string {
 				val = ff.oldDisp + "  (read-only)"
 			}
 		case ff.kind == "select" || ff.kind == "iteration":
-			val = ff.value()
+			val = m.theme.Stripe(m.fieldOptionColor(ff.name, ff.value())).Render(ff.value())
 			if i == f.idx {
-				val += "  [Enter pick]"
+				val += m.theme.Meta.Render("  [Enter pick]")
 			}
 		default: // textinput kinds: the component renders its own cursor
+			m.styleInput(ff)
 			val = ff.input.View()
+		}
+		if ff.readonly {
+			val = m.theme.Meta.Render(val)
 		}
 		line := label + " " + val + dirty
 		if ff.err != "" {
-			line += "  ✗ " + ff.err
+			line += m.theme.Error.Render("  ✗ " + ff.err)
 		}
-		if i == f.idx && ff.kind != "title" && ff.kind != "date" && ff.kind != "number" && ff.kind != "text" {
-			line = m.theme.CardTitle.Bold(true).Render(truncateRunes(line, w))
-		} else if i != f.idx {
-			line = truncateRunes(line, w)
-		}
+		line = truncateANSI(line, w)
 		block := []string{line}
 		if f.picker && i == f.idx {
 			for pi, o := range ff.options {
@@ -209,12 +226,21 @@ func (m *model) renderForm(w, h int) string {
 				if pi == f.pickIdx {
 					mark = "  ▸ "
 				}
-				block = append(block, mark+o)
+				option := m.theme.Stripe(m.fieldOptionColor(ff.name, o)).Render(mark + o)
+				if pi == f.pickIdx {
+					option = m.theme.Selected(mark+o, w)
+				}
+				block = append(block, option)
 			}
 		}
 		blocks[i] = block
 	}
-	avail := max(1, h-4) // header (2) + footer (2)
+	footerText := "Tab field · Ctrl-E $EDITOR · Ctrl-S review · Esc back"
+	if f.dirtyCount() > 0 {
+		footerText = "● changed · " + footerText
+	}
+	footer := m.formFooter(footerText, w)
+	avail := max(1, h-2-len(strings.Split(footer, "\n")))
 	start := 0
 	for {
 		used, focusEnd := 0, 0
@@ -239,11 +265,7 @@ func (m *model) renderForm(w, h int) string {
 			shown++
 		}
 	}
-	if !f.isDraft {
-		b.WriteString("\n● = changed · Type to edit, arrows move the cursor · Tab field · Ctrl-E $EDITOR · Ctrl-S review & save · Esc back\n")
-	} else {
-		b.WriteString("\nType to edit, arrows move the cursor · Tab field · Ctrl-E $EDITOR · Ctrl-S review & create · Esc back\n")
-	}
+	b.WriteString(footer)
 	return strings.Join(splitLines(b.String(), h), "\n")
 }
 
@@ -254,9 +276,9 @@ func (m *model) renderSummary(w, h int) string {
 	}
 	var b strings.Builder
 	if s.isDraft {
-		b.WriteString(m.theme.Title.Render("Review new draft") + "\n")
+		b.WriteString(m.theme.KeyHint.Render("Review new draft") + "\n")
 		b.WriteString(strings.Repeat("─", min(w, 45)) + "\n")
-		fmt.Fprintf(&b, "Create draft: %s\n", s.title)
+		b.WriteString(m.theme.Meta.Render("Create draft: ") + m.theme.Title.Render(s.title) + "\n")
 		b.WriteString("\nEnter create · e back to form · Esc back\n")
 		return strings.Join(splitLines(b.String(), h), "\n")
 	}
@@ -264,7 +286,7 @@ func (m *model) renderSummary(w, h int) string {
 	if m.detail != nil {
 		ref = m.detail.Ref()
 	}
-	b.WriteString(m.theme.Title.Render(truncateRunes("Review changes — "+ref, w)) + "\n")
+	b.WriteString(m.theme.KeyHint.Render(truncateRunes("Review changes — "+ref, w)) + "\n")
 	b.WriteString(strings.Repeat("─", min(w, 45)) + "\n")
 	if !s.sent {
 		for _, line := range core.SummaryLines(s.changes) {
@@ -415,9 +437,9 @@ func (m *model) renderBoardPicker(w int) string {
 	boxW := min(w-4, 56)
 	inner := max(10, boxW-4)
 	var lines []string
-	lines = append(lines, "─ Boards "+strings.Repeat("─", max(0, inner-10)))
+	lines = append(lines, m.theme.KeyHint.Render("Projects / Boards"))
 	if m.boardFilter != "" {
-		lines = append(lines, "Filter: "+m.boardFilter)
+		lines = append(lines, m.theme.Meta.Render("Filter: ")+m.theme.KeyHint.Render(m.boardFilter))
 	}
 	switch {
 	case m.boardsLoading && m.boards == nil:
@@ -442,21 +464,33 @@ func (m *model) renderBoardPicker(w int) string {
 			}
 			cur := "  "
 			if p.ID == m.project.ID {
-				cur = "• "
+				cur = "[current] "
 			}
-			lines = append(lines, mark+cur+p.Ref()+" — "+p.Title)
+			ref := p.Ref()
+			if cur != "  " {
+				ref = "• " + ref
+			}
+			row := mark + m.theme.KeyHint.Render(ref)
+			if cur != "  " {
+				row += " " + m.theme.Meta.Render(cur)
+			}
+			row += " — " + p.Title
+			if i == m.boardIdx {
+				row = m.theme.Selected(row, inner)
+			}
+			lines = append(lines, row)
 		}
 		if len(list) > 10 {
 			lines = append(lines, fmt.Sprintf("… %d boards (type to filter)", len(list)))
 		}
 	}
 	var b strings.Builder
-	b.WriteString("╭" + strings.Repeat("─", boxW-2) + "╮\n")
+	b.WriteString(m.theme.KeyHint.Render("╭"+strings.Repeat("─", boxW-2)+"╮") + "\n")
 	for _, l := range lines {
-		b.WriteString("│ " + padRight(truncateRunes(l, inner), inner) + " │\n")
+		b.WriteString(m.theme.KeyHint.Render("│") + " " + padRight(truncateANSI(l, inner), inner) + " " + m.theme.KeyHint.Render("│") + "\n")
 	}
-	b.WriteString("╰" + strings.Repeat("─", boxW-2) + "╯")
-	return b.String()
+	b.WriteString(m.theme.KeyHint.Render("╰" + strings.Repeat("─", boxW-2) + "╯"))
+	return m.theme.Surface(b.String())
 }
 
 func (m *model) renderGroupPicker(w int) string {

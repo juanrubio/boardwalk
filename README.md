@@ -54,9 +54,11 @@ Inside the board, everything is keyboard-driven and the footer always shows the 
 | `P` | Jump to another board |
 | `[` / `]` | Previous / next board |
 | `/` | Filter cards |
-| `q` | Quit |
+| `q` | Ask to quit from the board; Cancel is selected by default |
 
 Boards open instantly from a local snapshot and refresh in the background, so you are never staring at a spinner. Column colours come from the colours you already gave your statuses on GitHub, and each board remembers how you left it — density, collapsed columns, grouping.
+
+The status bar uses coloured shortcuts and distinct status messages. Detail fields and draft selectors retain GitHub's option colours; the projects picker and draft form make the current selection and editing focus visible in light, dark, and no-colour terminals. Confirming quit waits for pending moves; a failed move keeps the application open so its error can be read.
 
 ## From the command line
 

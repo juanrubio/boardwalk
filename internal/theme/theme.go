@@ -6,13 +6,18 @@
 package theme
 
 import (
+	"fmt"
 	"image/color"
+	"strings"
+
+	"github.com/charmbracelet/x/ansi"
 
 	"charm.land/lipgloss/v2"
 )
 
 // Tokens are the semantic styling vocabulary shared by TUI and CLI.
 type Tokens struct {
+	Surface     color.Color // raised modal surface
 	BG          color.Color // canonical terminal background the theme targets
 	FG          color.Color
 	Muted       color.Color
@@ -164,6 +169,7 @@ func (t *Theme) OptionColor(name string) color.Color {
 
 func darkTokens() Tokens {
 	return Tokens{
+		Surface:     lipgloss.Color("#161B22"),
 		BG:          lipgloss.Color("#0D1117"),
 		FG:          lipgloss.Color("#E6EDF3"),
 		Muted:       lipgloss.Color("#9DA7B3"),
@@ -190,6 +196,7 @@ func darkTokens() Tokens {
 
 func lightTokens() Tokens {
 	return Tokens{
+		Surface:     lipgloss.Color("#F6F8FA"),
 		BG:          lipgloss.Color("#FFFFFF"),
 		FG:          lipgloss.Color("#1F2328"),
 		Muted:       lipgloss.Color("#59636E"),
@@ -217,7 +224,7 @@ func lightTokens() Tokens {
 func monoTokens() Tokens {
 	none := lipgloss.Color("")
 	return Tokens{
-		BG: none, FG: none, Muted: none, Subtle: none, Border: none,
+		Surface: none, BG: none, FG: none, Muted: none, Subtle: none, Border: none,
 		BorderFocus: none, Accent: none, SelectionBG: none,
 		Success: none, Warning: none, Danger: none,
 		Options: map[string]color.Color{
@@ -225,4 +232,39 @@ func monoTokens() Tokens {
 			"ORANGE": none, "RED": none, "PINK": none, "PURPLE": none,
 		},
 	}
+}
+
+// Surface fills a raised modal without allowing nested SGR resets to punch
+// holes in its surface or leak its background into centering padding.
+func (t *Theme) Surface(content string) string {
+	return t.fill(content, t.Tokens.Surface)
+}
+
+func (t *Theme) fill(content string, bg color.Color) string {
+	if t.Mono {
+		return content
+	}
+	r, g, b, _ := bg.RGBA()
+	fr, fg, fb, _ := t.Tokens.FG.RGBA()
+	restore := fmt.Sprintf("\x1b[38;2;%d;%d;%dm\x1b[48;2;%d;%d;%dm", fr>>8, fg>>8, fb>>8, r>>8, g>>8, b>>8)
+	rows := strings.Split(content, "\n")
+	for i, line := range rows {
+		for _, reset := range []string{"\x1b[m", "\x1b[0m", "\x1b[49m"} {
+			line = strings.ReplaceAll(line, reset, reset+restore)
+		}
+		rows[i] = restore + line + "\x1b[0m"
+	}
+	return strings.Join(rows, "\n")
+}
+
+// Selected renders a complete row; a caller-provided marker remains visible
+// in monochrome. Selected values use the theme foreground for AA contrast.
+func (t *Theme) Selected(content string, width int) string {
+	plain := ansi.Truncate(ansi.Strip(content), max(0, width), "…")
+	plain += strings.Repeat(" ", max(0, width-ansi.StringWidth(plain)))
+	style := lipgloss.NewStyle().Bold(true)
+	if !t.Mono {
+		style = style.Foreground(t.Tokens.FG).Background(t.Tokens.SelectionBG)
+	}
+	return style.Render(plain)
 }

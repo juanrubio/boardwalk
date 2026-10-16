@@ -1,8 +1,8 @@
 [1mBoardwalk · SnazzyEmail (fixture) (fixture-user/1) · Grouped by Status · 14 items[m                updated 4m ago · ? Help
 [1mBacklog (4)[m                         │[1mFixture issue item 04[m
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓│─────────────────────────────────────────────
-┃ ▎▸Fixture issue item 04          ┃│Kind:     issue · fixture/repo#8
-┃ ▎ issue fixture/repo#8           ┃│URL:      https://github.com/fixture/repo/issues/8
+┃ ▎▸Fixture issue item 04          ┃│Kind:     [1missue · fixture/repo#8[m
+┃ ▎ issue fixture/repo#8           ┃│URL:      [1mhttps://github.com/fixture/repo/issues/8[m
 ┃ ▎                                ┃│Assignees: -
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛│Status:    ● Backlog
 ╭──────────────────────────────────╮│Labels:    -
@@ -37,4 +37,4 @@
                                     │
                                     │
                                     │
-↑↓/jk board · Tab pane · Enter/Esc close pane · H/L move · e edit · x archive
+[1m↑↓/jk[m board · [1mTab[m pane · [1mEnter/Esc[m close pane · [1mH/L[m move · [1me[m edit · [1mx[m archive

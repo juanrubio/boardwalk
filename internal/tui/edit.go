@@ -354,7 +354,7 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 				}
 			}
 			if strings.TrimSpace(title) == "" {
-				m.footer = "Title is required."
+				m.setFooter(statusError, "Title is required.")
 				return m, nil
 			}
 			m.summary = &summaryState{
@@ -366,11 +366,11 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 		}
 		changes, err := m.formChanges()
 		if err != nil {
-			m.footer = err.Error()
+			m.setFooter(statusError, err.Error())
 			return m, nil
 		}
 		if len(changes) == 0 {
-			m.footer = "No changes."
+			m.setFooter(statusInfo, "No changes.")
 			return m, nil
 		}
 		m.summary = &summaryState{changes: changes}
@@ -384,7 +384,7 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 			editor = os.Getenv("EDITOR")
 		}
 		if editor == "" {
-			m.footer = "No $VISUAL/$EDITOR set; edit the Body field here."
+			m.setFooter(statusWarning, "No $VISUAL/$EDITOR set; edit the Body field here.")
 			return m, nil
 		}
 		bodyIdx := -1
@@ -398,7 +398,7 @@ func (m *model) onFormKey(msg tea.KeyPressMsg, s, ks string) (tea.Model, tea.Cmd
 		}
 		tmp, err := os.CreateTemp("", "boardwalk-body-*.md")
 		if err != nil {
-			m.footer = "Editor handoff failed: " + err.Error()
+			m.setFooter(statusError, "Editor handoff failed: "+err.Error())
 			return m, nil
 		}
 		path := tmp.Name()

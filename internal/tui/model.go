@@ -35,6 +35,7 @@ const (
 	overlayAdd
 	overlayDiscard // discard dirty form?
 	overlayQuitDirty
+	overlayQuit
 	overlayBoards  // board picker (A6)
 	overlayConvert // convert draft to issue repo prompt (A7)
 )
@@ -103,12 +104,15 @@ type model struct {
 	form    *formState
 	summary *summaryState
 
-	pending   map[string]*pendingMove
-	failed    map[string]string // itemID -> failure reason
-	undo      []undoEntry
-	footer    string
-	quitting  bool
-	forceQuit bool
+	pending         map[string]*pendingMove
+	failed          map[string]string // itemID -> failure reason
+	undo            []undoEntry
+	footerTone      statusTone
+	footerAnnotated string
+	quitChoice      bool // false selects Cancel
+	footer          string
+	quitting        bool
+	forceQuit       bool
 
 	sortOff       bool              // session-only fallback to manual order (A10)
 	boards        []githubx.Project // all visible boards; nil until fetched (A6)
@@ -280,7 +284,7 @@ func (m *model) rebuildFocus() {
 			return
 		}
 		if m.view == viewKanban {
-			m.footer = "Kanban grouping is unavailable for this project: it has no single-select field. Showing list view."
+			m.setFooter(statusWarning, "Kanban grouping is unavailable for this project: it has no single-select field. Showing list view.")
 		}
 		m.forceList = true
 		m.view = viewList
@@ -518,7 +522,7 @@ func (m *model) switchTo(p githubx.Project) tea.Cmd {
 	*m = *nm
 	m.boards = boards
 	m.width, m.height = w, h
-	m.footer = "Board " + p.Ref() + " — " + p.Title
+	m.setFooter(statusInfo, "Board "+p.Ref()+" — "+p.Title)
 	return m.Init()
 }
 
@@ -547,7 +551,7 @@ func (m *model) requestBoards(cycle int, openPicker bool) tea.Cmd {
 		}
 		return nil
 	}
-	m.footer = "Loading boards…"
+	m.setFooter(statusPending, "Loading boards…")
 	return m.loadBoardsCmd(cycle, openPicker)
 }
 

@@ -1,11 +1,12 @@
 # Boardwalk TUI specification
 
-**Status:** Final — amended by A1 and A2 (2026-10-13)
+**Status:** Final — amended through A12 (2026-10-16)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
 **Amended:** 2026-10-13 — A1, owner approval of the
 [beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md);
 A2, mockup beauty-review fixes ([mockups.md](mockups.md)).
-Amended passages are marked *(A1)* / *(A2)*; see the amendment log at the end.
+**Latest amendment:** A12 (2026-10-16), owner-requested quit confirmation and colour treatment inspired by Trailmark.
+Amended passages are marked by amendment number; see the amendment log at the end.
 **Date:** 2026-10-13
 **Scope:** `boardwalk board` — full item management in the MVP
 ([ADR 0006](../decisions/0006-tui-scope-full-in-mvp.md), Final) on the
@@ -80,7 +81,7 @@ addition, never a requirement.
 | `Enter` | Open the detail pane for the focused card; *(A8)* with the pane open and focus on the board, dismiss it |
 | `Tab` | *(A1)* Move focus between the board and an open detail pane |
 | `Esc` / `q` in a panel | Close the panel and return focus to the board |
-| `q` on the board | Quit (see "Quitting" below) |
+| `q` on the board | *(A12)* Open a Cancel-default quit confirmation (see "Quitting" below) |
 | `?` | Toggle the help overlay listing all keys |
 
 Arrow keys and `hjkl` are both active wherever navigation is possible.
@@ -238,16 +239,29 @@ reference so it can be copied by hand.
   Matches are highlighted in card titles with weight or underline, not
   only colour.
 
-### Quitting *(A1)*
+### Quitting *(A1, A12)*
 
-`q` (board) and `Ctrl-C` (anywhere) quit at once **unless** a write is
-in flight or a form is dirty:
+`q` on the board opens **Quit Boardwalk?** with **Cancel** selected by
+default. Arrows or Tab select Cancel/Quit; Enter activates the selection,
+`y` confirms, and Esc/`n` cancels. Repeated `q` cannot bypass the prompt.
+Cancelling preserves the board, selection, pending work, and filters.
+`q` in a nested pane still goes back, and focused text inputs retain it as
+text. An undersized-terminal view must not silently bypass confirmation.
 
-- In-flight writes: the footer shows `saving 1 change…` and Boardwalk
-  quits when the writes settle. A second `Ctrl-C` quits at once and
-  prints the unconfirmed changes on exit, so their outcome is never
-  silently unknown.
-- A dirty form follows §4's discard rule.
+The modal uses an accent title/border, a distinct surface, and clearly
+separated buttons with a visible focus marker even without colour.
+
+- Confirmation, not opening the modal, requests exit. With pending moves,
+  the footer shows `saving 1 change…` and Boardwalk waits for confirmation
+  from GitHub before exiting. Writes finishing while the modal is open do
+  not themselves authorize exit. A failed write cancels a pending exit and
+  keeps the failure visible.
+- `Ctrl-C` keeps its existing fast-exit role and pending-write/dirty-form
+  protections. With pending moves the first press shows the saving/force-exit
+  notice; another press can force exit, still respecting the dirty-form
+  discard prompt and reporting unconfirmed changes. This shortcut does not
+  select Quit in the new confirmation modal.
+- A dirty form follows §4's discard rule; quit styling does not bypass it.
 
 ### Mouse
 
@@ -413,7 +427,7 @@ style, never a card's size.
 All styling goes through one theme package. Components never use raw
 colours or ad-hoc padding.
 
-- **Semantic colour tokens:** `fg`, `muted`, `subtle`, `border`,
+- **Semantic colour tokens:** `bg`, `surface`, `fg`, `muted`, `subtle`, `border`,
   `borderFocus`, `accent`, `selectionBg`, `success`, `warning`,
   `danger`, plus the eight option-colour tokens above. Each token has a
   light, dark, 256-colour, and monochrome value (monochrome falls back
@@ -437,6 +451,24 @@ colours or ad-hoc padding.
   by the label text first and the colour second.
 
 ### Detail pane content
+
+*(A12)* **Colour continuity.** Footer shortcut keys use bold accent colour,
+action labels and separators use muted colour, and status text uses distinct
+informational, pending/warning, and failure treatments. Style known shortcut
+labels explicitly; user-entered messages and references are never interpreted
+as shortcut markup. Keep the one-line footer within the terminal width.
+
+Detail titles retain bold emphasis, references use the accent, field labels
+remain muted, and single-select values use their GitHub option colours with
+existing symbols.
+The projects/boards picker uses an accent heading/border, distinct project
+references, and a full-row selected fill plus selection/current-board markers.
+Draft/edit forms use accent focus labels, visible active fields and picker
+options, warning-coloured dirty markers, muted read-only values, and
+danger-coloured validation messages. Input cursors and editing behavior stay
+unchanged. All styling comes from the shared theme and retains monochrome
+focus markers. Filled surfaces end at their component boundaries; ANSI resets
+must not create holes or colour surrounding frame padding.
 
 Title, kind/repository link reference, body (scrollable), then every
 project field with its current value in field order — the same data
@@ -701,7 +733,7 @@ relaunching, against the speed priority).
   monochrome, and in light and dark, for these states: board, focused
   card, split detail, edit form with dirty fields, change summary with a
   partial failure, help overlay, search with matches, snapshot-stale
-  header, and "terminal too small". Any frame diff fails CI until the
+  header, quit confirmation, and "terminal too small". Any frame diff fails CI until the
   golden file is deliberately updated.
 - **Contrast check.** A unit test asserts the WCAG AA rule for every
   text token pair in the theme (§3 Visual language).
@@ -792,3 +824,11 @@ build starts. The results are recorded as an amendment.
     column by its option order by default (display only, derived
     from GitHub values, identical on every machine); `s` toggles
     manual board order for the session only.
+- **A12 (2026-10-16)** — owner request for Trailmark-style visual improvements:
+  - §2: Cancel-default quit modal, pending-write confirmation sequencing,
+    preserved dirty-form/input behavior, and failure-visible exit handling.
+  - §3: coloured footer keys/status, detail metadata, projects picker, and
+    draft/edit form focus, selection and validation. Keep theme and no-colour
+    behavior consistent, with ANSI-safe boundaries and width calculations.
+  - Validation uses offline fixtures and reviewed golden/ANSI frames; it does
+    not perform GitHub mutations or replace physical-terminal acceptance.

@@ -82,6 +82,9 @@ func TestGoldenFrames(t *testing.T) {
 			m.snapAt = time.Now().Add(-4 * time.Minute)
 		}},
 		{"archive-80x24", 80, 24, func(m *model) { m.overlay = overlayArchive }},
+		{"quit-80x24-dark", 80, 24, func(m *model) { m.theme = theme.Dark(); m.requestQuit() }},
+		{"quit-120x40-light", 120, 40, func(m *model) { m.theme = theme.Light(); m.requestQuit(); m.quitChoice = true }},
+		{"quit-60x15-mono", 60, 15, func(m *model) { m.requestQuit() }},
 		{"delete-stage2-80x24", 80, 24, func(m *model) { m.overlay = overlayDelete; m.deleteStage = 1 }},
 		{"group-picker-120x40", 120, 40, func(m *model) { m.overlay = overlayGroup }},
 		{"board-picker-120x40", 120, 40, func(m *model) {

@@ -1,17 +1,18 @@
 [1mBoardwalk · SnazzyEmail (fixture) (fixture-user/1) · Grouped by Status · 14 items[m                updated 4m ago · ? Help
 [1mBacklog (4)[m                              [1mReady (1)[m                               [1mIn progress (1)[m                        
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╭─────────────────────────────────────╮ ╭─────────────────────────────────────╮
+┃ ▎▸Fixture issue item 04              ┃ │ ▎ Fixture issue item 01             │ │ ▎ Fixture issue item 02             │
      ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────╮     
      │ [1mEdit — Fixture issue item 04[m                                                                               │     
      │ ────────────────────────────────────────────────────────────────                                           │     
-     │ ▸ Title:                [37m[mFixture issue item 04[7;37m [m                                                             │     
+     │ [1m▸ Title:               [m [1m[mFixture issue item 04[7m [m                                                             │     
      │   Body:                                                                                                    │     
-     │   [37m[37m[m[m[37m[m[37m[37m [m[m[37m[m[37m                                                                                                       [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
+     │   [1m[m                                                                                                         │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
      │   Assignees:            (read-only)                                                                        │     
      │   Status:               Backlog                                                                            │     
      │   Labels:               (read-only)                                                                        │     
@@ -23,18 +24,17 @@
      │   Sub-issues progress:  (read-only)                                                                        │     
      │   Priority:                                                                                                │     
      │   Size:                                                                                                    │     
-     │   Estimate:             [37m[m[37m[m [37m                                                                                …[m │     
-     │   Start date:           [37m[m[37m[m [37m                                                                                …[m │     
-     │   Target date:          [37m[m[37m[m [37m                                                                                …[m │     
+     │   Estimate:                                                                                                │     
+     │   Start date:                                                                                              │     
+     │   Target date:                                                                                             │     
      │   Created:              (read-only)                                                                        │     
      │   Updated:              (read-only)                                                                        │     
      │   Closed:               (read-only)                                                                        │     
+     │ Tab field · Ctrl-E $EDITOR · Ctrl-S review · Esc back                                                      │     
      │                                                                                                            │     
-     │ ● = changed · Type to edit, arrows move the cursor · Tab field · Ctrl-E $EDITOR · Ctrl-S review & save ·   │     
-     │ Esc back                                                                                                   │     
      │                                                                                                            │     
      ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────╯     
                                                                                                                         
                                                                                                                         
                                                                                                                         
-Type to edit · ←→ cursor · Tab/↑↓ field · Enter pick · Ctrl-E $EDITOR · Ctrl-S review & save · Esc back
+Type to edit · [1m←→[m cursor · [1mTab/↑↓[m field · [1mEnter[m pick · [1mCtrl-E[m $EDITOR · [1mCtrl-S[m review & save · [1mEsc[m back

@@ -32,7 +32,7 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if ks == "ctrl+c" {
 		if len(m.pending) > 0 && !m.forceQuit {
 			m.forceQuit = true
-			m.footer = fmt.Sprintf("saving %d change… (Ctrl-C again to quit now)", len(m.pending))
+			m.setFooter(statusPending, fmt.Sprintf("saving %d change… (Ctrl-C again to quit now)", len(m.pending)))
 			return m, nil
 		}
 		if m.form != nil && m.form.dirtyCount() > 0 && m.overlay != overlayQuitDirty {
@@ -42,10 +42,21 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 
-	// Too-small: only q / ctrl-c
+	// Confirmation remains available even below the board's minimum size.
+	if m.overlay == overlayQuit {
+		return m.onQuitKey(s)
+	}
+	// Too-small board: allow the compact confirmation and Ctrl-C escape hatch.
 	if m.width > 0 && (m.width < 60 || m.height < 15) {
+		if m.overlay == overlayQuitDirty || m.overlay == overlayDiscard {
+			if s == "y" && m.overlay == overlayQuitDirty {
+				return m, tea.Quit
+			}
+			m.overlay = overlayNone
+			return m, nil
+		}
 		if s == "q" {
-			return m, tea.Quit
+			m.requestQuit()
 		}
 		return m, nil
 	}
@@ -139,13 +150,10 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.pane, m.paneFocus = paneNone, false
 			return m, nil
 		}
-		if len(m.pending) > 0 {
-			m.quitting = true
-			m.footer = fmt.Sprintf("saving %d change…", len(m.pending))
-			// quit when pending settles (onMoveResult)
-			return m, nil
+		if !m.quitting {
+			m.requestQuit()
 		}
-		return m, tea.Quit
+		return m, nil
 	case "?":
 		m.overlay = overlayHelp
 		return m, nil
@@ -213,7 +221,7 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		// Convert draft to issue (A7): repo prompt, drafts only.
 		if it, ok := m.focusedItem(); ok {
 			if it.Kind != githubx.KindDraft {
-				m.footer = "Only drafts can be converted (" + it.Ref() + " is a " + string(it.Kind) + ")."
+				m.setFooter(statusWarning, "Only drafts can be converted ("+it.Ref()+" is a "+string(it.Kind)+").")
 				return m, nil
 			}
 			m.overlay = overlayConvert
@@ -226,26 +234,26 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "o":
 		if it, ok := m.focusedItem(); ok && it.URL != "" {
 			_ = browser.OpenURL(it.URL)
-			m.footer = "Opened in browser."
+			m.setFooter(statusInfo, "Opened in browser.")
 		} else {
-			m.footer = "No URL for this item."
+			m.setFooter(statusWarning, "No URL for this item.")
 		}
 		return m, nil
 	case "y":
 		if it, ok := m.focusedItem(); ok {
-			m.footer = "Copied " + it.Ref()
+			m.setFooter(statusInfo, "Copied "+it.Ref())
 			return m, tea.SetClipboard(it.Ref())
 		}
 		return m, nil
 	case "Y":
 		if it, ok := m.focusedItem(); ok && it.URL != "" {
-			m.footer = "Copied URL."
+			m.setFooter(statusInfo, "Copied URL.")
 			return m, tea.SetClipboard(it.URL)
 		}
 		return m, nil
 	case "g":
 		if len(singleSelectFields(m.board.Fields)) == 0 {
-			m.footer = "This project has no single-select field to group by."
+			m.setFooter(statusWarning, "This project has no single-select field to group by.")
 			return m, nil
 		}
 		m.overlay = overlayGroup
@@ -267,7 +275,7 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.syncListToFocus()
 		} else {
 			if m.forceList {
-				m.footer = "Kanban is unavailable: this project has no single-select field."
+				m.setFooter(statusWarning, "Kanban is unavailable: this project has no single-select field.")
 				return m, nil
 			}
 			m.view = viewKanban
@@ -278,14 +286,14 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		// Priority sort toggle, session only (A10).
 		pf, ok := m.priorityField()
 		if !ok {
-			m.footer = "No Priority field on this board — order stays manual."
+			m.setFooter(statusWarning, "No Priority field on this board — order stays manual.")
 			return m, nil
 		}
 		m.sortOff = !m.sortOff
 		if m.sortOff {
-			m.footer = "Order: manual (board order)"
+			m.setFooter(statusInfo, "Order: manual (board order)")
 		} else {
-			m.footer = "Order: sorted by " + pf.Name
+			m.setFooter(statusInfo, "Order: sorted by "+pf.Name)
 		}
 		m.clampFocus()
 		return m, nil
@@ -299,7 +307,7 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.density = "comfortable"
 		}
 		m.savePrefs()
-		m.footer = "Density: " + m.density
+		m.setFooter(statusInfo, "Density: "+m.density)
 		return m, nil
 	case "P":
 		// Board picker (A6): board-level only, never over a pane/form.
@@ -330,7 +338,7 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case "r":
 		m.loading = true
-		m.footer = "Refreshing…"
+		m.setFooter(statusPending, "Refreshing…")
 		focusID := ""
 		if it, ok := m.focusedItem(); ok {
 			focusID = it.ID
@@ -340,7 +348,7 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "esc":
 		if m.filter != "" {
 			m.filter = ""
-			m.footer = "Filter cleared."
+			m.setFooter(statusInfo, "Filter cleared.")
 			m.clampFocus()
 			return m, nil
 		}
@@ -462,6 +470,7 @@ func (m *model) maybeLoadDetail() tea.Cmd {
 func (m *model) loadDetailCmd(itemID string) tea.Cmd {
 	svc := m.svc
 	width := m.detailTextWidth()
+	selectedTheme := m.theme
 	return func() tea.Msg {
 		if svc == nil || svc.Client == nil {
 			return detailMsg{err: fmt.Errorf("no GitHub client configured")}
@@ -470,7 +479,7 @@ func (m *model) loadDetailCmd(itemID string) tea.Cmd {
 		if err != nil {
 			return detailMsg{err: err}
 		}
-		body := renderBody(it.Body, width)
+		body := renderBody(it.Body, width, selectedTheme)
 		return detailMsg{item: it, body: body}
 	}
 }
@@ -515,10 +524,10 @@ func (m *model) onConvertKey(msg tea.KeyPressMsg, ks string) (tea.Model, tea.Cmd
 		repo := strings.TrimSpace(m.convertText)
 		m.overlay = overlayNone
 		if repo == "" {
-			m.footer = "Enter a repository (owner/repo) to convert into."
+			m.setFooter(statusWarning, "Enter a repository (owner/repo) to convert into.")
 			return m, nil
 		}
-		m.footer = "Converting…"
+		m.setFooter(statusPending, "Converting…")
 		return m, m.convertCmd(repo)
 	case "backspace":
 		r := []rune(m.convertText)
@@ -567,7 +576,7 @@ func (m *model) onGroupKey(s string) (tea.Model, tea.Cmd) {
 			m.forceList = false
 			m.col, m.row = 0, 0
 			m.savePrefs()
-			m.footer = "Grouped by " + m.groupField.Name
+			m.setFooter(statusInfo, "Grouped by "+m.groupField.Name)
 		}
 		m.overlay = overlayNone
 	}
@@ -666,7 +675,7 @@ func (m *model) onAddKey(msg tea.KeyPressMsg, ks string) (tea.Model, tea.Cmd) {
 		// duplicate check
 		if m.board != nil {
 			if it, err := core.ResolveItemRef(m.board, ref); err == nil {
-				m.footer = it.Ref() + " is already on this project."
+				m.setFooter(statusInfo, it.Ref()+" is already on this project.")
 				m.overlay = overlayNone
 				return m, nil
 			}

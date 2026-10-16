@@ -63,6 +63,7 @@ They need to:
    - Filter by text, status, assignee, repository, and item type.
    - Paginate transparently and keep large boards usable.
    - Provide a TUI kanban grouped by a selected single-select field (normally Status), plus a compact list/detail view.
+   - Use semantic colours in the status bar, detail pane, projects picker, and draft/edit forms: accent shortcuts and focus, muted labels, GitHub option colours, and distinct warning/error states. Preserve visible selection and readable controls in dark, light, and no-colour terminals (TUI amendment A12).
 3. **File work**
    - Add an existing issue or pull request using OWNER/REPO#NUMBER or a URL.
    - Create a draft project item with a title and optional body.
@@ -76,6 +77,7 @@ They need to:
    - Offer human-readable output and a JSON mode for scripts.
    - Provide dry-run for mutations; require explicit confirmation for archive/remove/destructive actions.
    - Return non-zero exit codes and actionable messages on failure.
+   - Require a Cancel-default confirmation when `q` would exit the board. Preserve nested-view back behavior, printable input keys, and dirty-form safeguards. Confirmed quit waits for pending moves; a failed write cancels the pending exit so its error remains visible (TUI amendment A12).
 
 ### Out of scope for MVP
 - Creating or deleting GitHub projects, or administering their fields and workflows.

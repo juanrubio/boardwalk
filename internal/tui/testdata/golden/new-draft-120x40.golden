@@ -5,24 +5,24 @@
      ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────╮     
      │ [1mNew draft item[m                                                                                             │     
      │ ────────────────────────────────────────────────────────────────                                           │     
-     │ ▸ Title:       [37m[m[7;37m [m                                                                                           │     
+     │ [1m▸ Title:      [m [1m[m[7m [m                                                                                           │     
      │   Body:                                                                                                    │     
-     │   [37m[37m[m[m[37m[m[37m[37m [m[m[37m[m[37m                                                                                                       [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
-     │   [30m                                                                                                        [m │     
+     │   [1m[m                                                                                                         │     
      │                                                                                                            │     
-     │ Type to edit, arrows move the cursor · Tab field · Ctrl-E $EDITOR · Ctrl-S review & create · Esc back      │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │                                                                                                            │     
+     │ Tab field · Ctrl-E $EDITOR · Ctrl-S review · Esc back                                                      │     
+     │                                                                                                            │     
      │                                                                                                            │     
      │                                                                                                            │     
      │                                                                                                            │     
@@ -37,4 +37,4 @@
                                                                                                                         
                                                                                                                         
                                                                                                                         
-Type to edit · ←→ cursor · Tab/↑↓ field · Enter pick · Ctrl-E $EDITOR · Ctrl-S review & save · Esc back
+Type to edit · [1m←→[m cursor · [1mTab/↑↓[m field · [1mEnter[m pick · [1mCtrl-E[m $EDITOR · [1mCtrl-S[m review & save · [1mEsc[m back

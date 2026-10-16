@@ -94,3 +94,21 @@ func contrastRatio(a, b [3]float64) float64 {
 	}
 	return (la + 0.05) / (lb + 0.05)
 }
+
+func TestRaisedAndSelectedTextContrast(t *testing.T) {
+	for _, th := range []*Theme{Dark(), Light()} {
+		for name, fg := range map[string]color.Color{"text": th.Tokens.FG, "muted": th.Tokens.Muted, "accent": th.Tokens.Accent, "warning": th.Tokens.Warning, "danger": th.Tokens.Danger} {
+			if ratio := contrastRatio(parseColor(t, fg), parseColor(t, th.Tokens.Surface)); ratio < 4.5 {
+				t.Errorf("dark=%v surface %s contrast %.2f", th.Dark, name, ratio)
+			}
+		}
+		for name, fg := range th.Tokens.Options {
+			if ratio := contrastRatio(parseColor(t, fg), parseColor(t, th.Tokens.Surface)); ratio < 4.5 {
+				t.Errorf("dark=%v surface option %s contrast %.2f", th.Dark, name, ratio)
+			}
+		}
+		if ratio := contrastRatio(parseColor(t, th.Tokens.FG), parseColor(t, th.Tokens.SelectionBG)); ratio < 4.5 {
+			t.Errorf("selected text contrast %.2f", ratio)
+		}
+	}
+}
