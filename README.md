@@ -82,6 +82,10 @@ Every change first shows you a summary of exactly what will happen. Preview safe
 - **Nothing is edited offline.** If a change fails, Boardwalk tells you which fields were saved and which were not, and never pretends otherwise.
 - **It is fast on purpose.** Startup paints from a cached snapshot with zero network requests, and frame times are measured against fixed budgets in the test suite.
 
+## Contributing — humans and AI tools welcome
+
+Boardwalk itself was built with AI assistance, and contributions made that way are welcome here. Point your coding agent — or yourself — at [AGENTS.md](AGENTS.md): it has the map of the repo, how to build and verify, and the few rules that aren't obvious from the code. Contributions are judged on the change itself: specs respected, `make check` green. For anything bigger than a small fix, an issue first saves everyone time; [CONTRIBUTING.md](CONTRIBUTING.md) walks through the loop.
+
 ## Documentation and development
 
 - [Product requirements](PRD.md) and the [CLI](docs/specs/cli.md) / [TUI](docs/specs/tui.md) specifications describe the exact behaviour; [architecture decisions](docs/decisions/) record why things are the way they are.
