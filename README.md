@@ -85,6 +85,7 @@ Every change first shows you a summary of exactly what will happen. Preview safe
 ## Documentation and development
 
 - [Product requirements](PRD.md) and the [CLI](docs/specs/cli.md) / [TUI](docs/specs/tui.md) specifications describe the exact behaviour; [architecture decisions](docs/decisions/) record why things are the way they are.
+- [Roadmap](docs/roadmap.md) lists what's planned next, in build order, and what is deliberately not planned.
 - [VHS tapes](tapes/) hold the scripted demos, including how the sanitized showcase above was recorded.
 - Hacking on it: `make check` runs vet, the pinned linter, and the full offline test suite; `make build` builds the binary.
 
