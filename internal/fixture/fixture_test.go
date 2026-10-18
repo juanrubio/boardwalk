@@ -2,8 +2,12 @@ package fixture
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
+	"reflect"
 	"testing"
+
+	"github.com/juanrubio/boardwalk/internal/githubx"
 )
 
 func load(t *testing.T) *Client {
@@ -77,5 +81,57 @@ func TestFixturePagination(t *testing.T) {
 	}
 	if len(page3) != 50 || next3 != "" {
 		t.Fatalf("page3 = %d next=%q", len(page3), next3)
+	}
+}
+
+func TestFixtureUpdateItemPosition(t *testing.T) {
+	board := &githubx.Board{
+		Project: githubx.Project{ID: "PVT_1"},
+		Items: []githubx.Item{
+			{ID: "PVTI_1", Title: "one"},
+			{ID: "PVTI_2", Title: "two"},
+			{ID: "PVTI_3", Title: "three"},
+		},
+	}
+	c := &Client{Boards: []*githubx.Board{board}}
+	ctx := context.Background()
+	ids := func() []string {
+		out := make([]string, len(board.Items))
+		for i, it := range board.Items {
+			out[i] = it.ID
+		}
+		return out
+	}
+
+	if err := c.UpdateItemPosition(ctx, "PVT_1", "PVTI_1", "PVTI_2"); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := ids(), []string{"PVTI_2", "PVTI_1", "PVTI_3"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("after reorder = %v, want %v", got, want)
+	}
+
+	if err := c.UpdateItemPosition(ctx, "PVT_1", "PVTI_3", ""); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := ids(), []string{"PVTI_3", "PVTI_2", "PVTI_1"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("after move-to-top = %v, want %v", got, want)
+	}
+
+	boom := errors.New("position boom")
+	c.PositionErr = boom
+	before := ids()
+	if err := c.UpdateItemPosition(ctx, "PVT_1", "PVTI_1", ""); !errors.Is(err, boom) {
+		t.Fatalf("PositionErr call err = %v, want %v", err, boom)
+	}
+	if got := ids(); !reflect.DeepEqual(got, before) {
+		t.Fatalf("PositionErr mutated board: %v, was %v", got, before)
+	}
+	c.PositionErr = nil
+
+	if err := c.UpdateItemPosition(ctx, "PVT_nope", "PVTI_1", ""); err == nil {
+		t.Fatal("unknown project: expected error, got nil")
+	}
+	if err := c.UpdateItemPosition(ctx, "PVT_1", "PVTI_nope", ""); err == nil {
+		t.Fatal("unknown item: expected error, got nil")
 	}
 }

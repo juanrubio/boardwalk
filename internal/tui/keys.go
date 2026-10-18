@@ -30,9 +30,9 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	// Global quit
 	if ks == "ctrl+c" {
-		if len(m.pending) > 0 && !m.forceQuit {
+		if m.pendingWrites() > 0 && !m.forceQuit {
 			m.forceQuit = true
-			m.setFooter(statusPending, fmt.Sprintf("saving %d change… (Ctrl-C again to quit now)", len(m.pending)))
+			m.setFooter(statusPending, fmt.Sprintf("saving %d change… (Ctrl-C again to quit now)", m.pendingWrites()))
 			return m, nil
 		}
 		if m.form != nil && m.form.dirtyCount() > 0 && m.overlay != overlayQuitDirty {
@@ -173,6 +173,10 @@ func (m *model) onKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, m.doMove(-1)
 	case "L":
 		return m, m.doMove(1)
+	case "K":
+		return m, m.doReorder(-1)
+	case "J":
+		return m, m.doReorder(1)
 	case "u":
 		return m, m.doUndo()
 	case "enter":

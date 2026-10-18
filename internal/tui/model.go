@@ -60,6 +60,24 @@ type pendingMove struct {
 	inFlight  bool
 }
 
+// pendingReorder tracks an optimistic within-column reorder (A13).
+// confirmed is the last GitHub-confirmed board order, kept for
+// rollback; ApplyReorder is pure, so the old slice stays valid.
+type pendingReorder struct {
+	itemID      string
+	afterID     string // latest target ("" = top)
+	sentAfterID string // target of the in-flight write
+	confirmed   []githubx.Item
+	scheduled   bool
+	inFlight    bool
+}
+
+// pendingWrites counts unconfirmed writes of every kind (moves and
+// reorders); quit waits for all of them.
+func (m *model) pendingWrites() int {
+	return len(m.pending) + len(m.pendingPos)
+}
+
 type undoEntry struct {
 	itemID   string
 	fromName string
@@ -105,6 +123,7 @@ type model struct {
 	summary *summaryState
 
 	pending         map[string]*pendingMove
+	pendingPos      map[string]*pendingReorder
 	failed          map[string]string // itemID -> failure reason
 	undo            []undoEntry
 	footerTone      statusTone
@@ -161,6 +180,13 @@ type moveResultMsg struct {
 
 type moveTickMsg struct{ itemID string }
 
+type reorderResultMsg struct {
+	itemID string
+	err    error
+}
+
+type reorderTickMsg struct{ itemID string }
+
 type detailMsg struct {
 	item githubx.Item
 	body string
@@ -199,7 +225,8 @@ func newModel(svc *core.Service, project githubx.Project, opts RunOptions) *mode
 		vte:   os.Getenv("VTE_VERSION") != "",
 		theme: initialTheme(), density: "comfortable",
 		collapsed: map[string]bool{}, pending: map[string]*pendingMove{},
-		failed: map[string]string{}, board: &githubx.Board{Project: project},
+		pendingPos: map[string]*pendingReorder{},
+		failed:     map[string]string{}, board: &githubx.Board{Project: project},
 	}
 	if opts.StartInList {
 		m.view = viewList

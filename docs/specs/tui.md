@@ -1,11 +1,11 @@
 # Boardwalk TUI specification
 
-**Status:** Final — amended through A12 (2026-10-16)
+**Status:** Final — amended through A13 (2026-10-17)
 **Accepted:** 2026-10-13 — owner acceptance of the settled decision-interview contract
 **Amended:** 2026-10-13 — A1, owner approval of the
 [beauty and speed review](../reviews/2026-10-13-beauty-and-speed.md);
 A2, mockup beauty-review fixes ([mockups.md](mockups.md)).
-**Latest amendment:** A12 (2026-10-16), owner-requested quit confirmation and colour treatment inspired by Trailmark.
+**Latest amendment:** A13 (2026-10-17), owner-requested within-column reordering with `J`/`K`.
 Amended passages are marked by amendment number; see the amendment log at the end.
 **Date:** 2026-10-13
 **Scope:** `boardwalk board` — full item management in the MVP
@@ -147,6 +147,30 @@ last full page — it never wraps to the top or runs past the end.
 - The detail panel offers the same move as a grouping-field edit, for
   picking a target by name. There is no separate column-picker mode on
   the board itself.
+
+### Reordering a card within its column *(A13)*
+
+| Keys | Action |
+|---|---|
+| `K` (shift+`k`) | Move focused card one step up within its column |
+| `J` (shift+`j`) | Move focused card one step down within its column |
+
+- *(A13)* Position is the board's global manual order; a column's
+  order is that order filtered to the column. `J`/`K` swap the card
+  with its neighbour in its grouping column (the whole list when the
+  board has no grouping field), in kanban and list view alike. Focus
+  stays on the card. At the top/bottom of the column nothing happens
+  and the footer says so.
+- *(A13)* Reordering follows the move rules above: it is optimistic,
+  coalesces repeated presses into one write after about 250 ms,
+  shows the `◌` pending marker, and on failure rolls back to the
+  last order GitHub confirmed with the error shown in place.
+  Quitting waits for reorder writes just like move writes.
+- *(A13)* While Priority sort is on (A10) the displayed order is not
+  the manual order, so `J`/`K` refuse and point at `s` to switch to
+  manual board order first. Snapshot-only (stale) cards likewise
+  cannot be reordered until live data arrives. Undo (`u`) covers
+  moves only, not reorders.
 
 ### Other primary actions
 
@@ -832,3 +856,11 @@ build starts. The results are recorded as an amendment.
     behavior consistent, with ANSI-safe boundaries and width calculations.
   - Validation uses offline fixtures and reviewed golden/ANSI frames; it does
     not perform GitHub mutations or replace physical-terminal acceptance.
+- **A13 (2026-10-17)** — owner request: within-column reordering.
+  - §2: `J`/`K` move the focused card one step down/up within its
+    grouping column against the global manual board order, with the
+    same optimistic apply, ~250 ms coalescing, rollback to the last
+    confirmed order, pending marker, and quit-waits-for-writes rules
+    as `H`/`L` moves; refused under Priority sort (A10, `s` switches
+    to manual order) and while showing a stale snapshot; undo does
+    not cover reorders.

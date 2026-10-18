@@ -348,6 +348,7 @@ func (m *model) renderHelp(w int) string {
 	lines := []string{
 		"─ Keys " + strings.Repeat("─", max(0, inner-7)),
 		"↑↓/jk card     ←→/hl column  H/L move",
+		"J/K reorder ↑↓",
 		"Enter detail   Tab pane      e edit",
 		"n draft        a add issue   x archive",
 		"/ filter       g grouping    v list/board",

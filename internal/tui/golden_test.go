@@ -188,7 +188,7 @@ func syntheticModel(n int) *model {
 	m := &model{
 		project: githubx.Project{ID: "PS", Number: 7, Title: "Synthetic", Owner: "fixture-org"},
 		theme:   theme.Monochrome(), density: "comfortable",
-		collapsed: map[string]bool{}, pending: map[string]*pendingMove{}, failed: map[string]string{},
+		collapsed: map[string]bool{}, pending: map[string]*pendingMove{}, pendingPos: map[string]*pendingReorder{}, failed: map[string]string{},
 		board: &githubx.Board{Project: githubx.Project{ID: "PS", Number: 7, Title: "Synthetic", Owner: "fixture-org"}, Fields: fields, Items: items},
 		width: 120, height: 40,
 	}

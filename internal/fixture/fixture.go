@@ -21,12 +21,13 @@ import (
 
 // Client is a fixture-backed githubx.Client.
 type Client struct {
-	mu        sync.Mutex
-	Boards    []*githubx.Board
-	Contents  map[string]githubx.Item // contentID -> item template for AddItem
-	FailField map[string]error        // field name -> error for SetFieldValue (partial-failure tests)
-	NextID    int64
-	AuthErr   error // when set, CheckAuth returns it
+	mu          sync.Mutex
+	Boards      []*githubx.Board
+	Contents    map[string]githubx.Item // contentID -> item template for AddItem
+	FailField   map[string]error        // field name -> error for SetFieldValue (partial-failure tests)
+	PositionErr error                   // when set, UpdateItemPosition returns it without mutating
+	NextID      int64
+	AuthErr     error // when set, CheckAuth returns it
 }
 
 // LoadDir reads every *.board.json in dir into a Client.
@@ -351,6 +352,35 @@ func (c *Client) DeleteItem(_ context.Context, projectID, itemID string) error {
 		}
 	}
 	return exiterr.NotFoundf("no fixture item %q", itemID)
+}
+
+func (c *Client) UpdateItemPosition(_ context.Context, projectID, itemID, afterID string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.PositionErr != nil {
+		return c.PositionErr
+	}
+	b := c.boardByID(projectID)
+	if b == nil {
+		return exiterr.NotFoundf("no fixture project id %q", projectID)
+	}
+	foundItem, foundAfter := false, afterID == ""
+	for i := range b.Items {
+		if b.Items[i].ID == itemID {
+			foundItem = true
+		}
+		if b.Items[i].ID == afterID {
+			foundAfter = true
+		}
+	}
+	if !foundItem {
+		return exiterr.NotFoundf("no fixture item %q", itemID)
+	}
+	if !foundAfter {
+		return exiterr.NotFoundf("no fixture item %q", afterID)
+	}
+	b.Items = githubx.ApplyReorder(b.Items, itemID, afterID)
+	return nil
 }
 
 func (c *Client) ArchiveItem(_ context.Context, _, itemID string) error {

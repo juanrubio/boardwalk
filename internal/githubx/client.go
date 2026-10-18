@@ -60,6 +60,10 @@ type Client interface {
 	// ConvertDraftToIssue converts a draft item into a real issue in
 	// repo (owner/name), keeping board position and field values (A7).
 	ConvertDraftToIssue(ctx context.Context, projectID, itemID, repo string) (Item, error)
+
+	// UpdateItemPosition moves an item to sit after afterID in the
+	// project's global item order; afterID "" moves it to the top (A13).
+	UpdateItemPosition(ctx context.Context, projectID, itemID, afterID string) error
 }
 
 // FieldAssign is one named field assignment in a batch save.

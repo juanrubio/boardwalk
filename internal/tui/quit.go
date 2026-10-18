@@ -35,9 +35,9 @@ func (m *model) onQuitKey(s string) (tea.Model, tea.Cmd) {
 
 func (m *model) confirmQuit() (tea.Model, tea.Cmd) {
 	m.overlay = overlayNone
-	if len(m.pending) > 0 {
+	if m.pendingWrites() > 0 {
 		m.quitting = true
-		m.setFooter(statusPending, fmt.Sprintf("saving %d change…", len(m.pending)))
+		m.setFooter(statusPending, fmt.Sprintf("saving %d change…", m.pendingWrites()))
 		return m, nil
 	}
 	return m, tea.Quit
@@ -56,7 +56,7 @@ func (m *model) quitButtons() string {
 func (m *model) renderQuitModal(w int) string {
 	width := min(46, w-6)
 	lines := []string{m.theme.KeyHint.Render("Quit Boardwalk?"), "", m.quitButtons(), "", m.keyHints(" · ", "←→/Tab", "choose", "Enter", "confirm", "Esc", "cancel")}
-	if len(m.pending) > 0 {
+	if m.pendingWrites() > 0 {
 		lines = append(lines, m.theme.Meta.Render("Pending writes finish before exit."))
 	}
 	content := strings.Join(lines, "\n")

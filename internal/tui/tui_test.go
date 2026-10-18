@@ -173,6 +173,201 @@ func TestMoveOptimisticAndUndo(t *testing.T) {
 	}
 }
 
+func itemOrder(items []githubx.Item) []string {
+	ids := make([]string, len(items))
+	for i, it := range items {
+		ids[i] = it.ID
+	}
+	return ids
+}
+
+func indexOfID(ids []string, id string) int {
+	for i, x := range ids {
+		if x == id {
+			return i
+		}
+	}
+	return -1
+}
+
+// flushReorderNow drives a pending reorder through its flush + result,
+// the way TestMoveOptimisticAndUndo drives a move.
+func flushReorderNow(t *testing.T, m *model, itemID string) *model {
+	t.Helper()
+	cmd := m.flushReorder(itemID)
+	if cmd == nil {
+		t.Fatal("flushReorder returned nil")
+	}
+	mm, _ := m.Update(cmd())
+	return mm.(*model)
+}
+
+func TestReorderOptimisticAndPersist(t *testing.T) {
+	m, fc := testModel(t, "fixture-user/1")
+	m.sortOff = true // manual board order (A10/A13)
+	// PVTI_snz_5 sits mid-Backlog, between snz_4 and snz_6.
+	m.setFocusedByID("PVTI_snz_5")
+	it, ok := m.focusedItem()
+	if !ok || it.ID != "PVTI_snz_5" {
+		t.Fatalf("focus = %q ok=%v", it.ID, ok)
+	}
+	before := itemOrder(m.board.Items)
+	m = send(m, "J")
+	after := itemOrder(m.board.Items)
+	if strings.Join(after, ",") == strings.Join(before, ",") {
+		t.Fatal("J did not change local order optimistically")
+	}
+	if indexOfID(after, "PVTI_snz_5") != indexOfID(after, "PVTI_snz_6")+1 {
+		t.Fatalf("snz_5 should sit right after snz_6: %v", after)
+	}
+	if _, ok := m.pendingPos[it.ID]; !ok {
+		t.Fatal("no pending reorder recorded")
+	}
+	m = flushReorderNow(t, m, it.ID)
+	if len(m.pendingPos) != 0 {
+		t.Fatalf("pending reorder not cleared: %v", m.pendingPos)
+	}
+	got := itemOrder(fc.Board("fixture-user/1").Items)
+	if strings.Join(got, ",") != strings.Join(after, ",") {
+		t.Fatalf("fixture order = %v, want %v", got, after)
+	}
+}
+
+func TestReorderAtTopOfColumn(t *testing.T) {
+	m, _ := testModel(t, "fixture-user/1")
+	m.sortOff = true
+	m.setFocusedByID("PVTI_snz_4") // first Backlog card
+	before := itemOrder(m.board.Items)
+	m = send(m, "K")
+	if strings.Join(itemOrder(m.board.Items), ",") != strings.Join(before, ",") {
+		t.Fatal("K at column top changed the order")
+	}
+	if len(m.pendingPos) != 0 {
+		t.Fatal("K at column top queued a reorder")
+	}
+	if !strings.Contains(m.footer, "top") {
+		t.Fatalf("footer should mention top, got %q", m.footer)
+	}
+}
+
+func TestReorderRollbackOnFailure(t *testing.T) {
+	m, fc := testModel(t, "fixture-user/1")
+	m.sortOff = true
+	fc.PositionErr = fmt.Errorf("synthetic position failure")
+	m.setFocusedByID("PVTI_snz_5")
+	it, _ := m.focusedItem()
+	before := itemOrder(m.board.Items)
+	m = send(m, "J")
+	if strings.Join(itemOrder(m.board.Items), ",") == strings.Join(before, ",") {
+		t.Fatal("J did not apply optimistically before the flush")
+	}
+	m = flushReorderNow(t, m, it.ID)
+	if strings.Join(itemOrder(m.board.Items), ",") != strings.Join(before, ",") {
+		t.Fatalf("failed reorder not rolled back: %v want %v", itemOrder(m.board.Items), before)
+	}
+	if !strings.Contains(m.failed[it.ID], "synthetic position failure") {
+		t.Fatalf("failed map = %v", m.failed)
+	}
+	if !strings.Contains(m.footer, "Reorder failed") {
+		t.Fatalf("footer = %q", m.footer)
+	}
+	if len(m.pendingPos) != 0 {
+		t.Fatal("pending reorder not cleared after failure")
+	}
+}
+
+// A failed reorder must roll back only its own item: another item's
+// already-confirmed reorder stays put (per-item rollback, not a
+// whole-board restore). B's reorder is started first so its pending
+// snapshot predates A's confirmation — a whole-board restore from
+// that stale snapshot would revert A. (Starting B only after A
+// confirms cannot catch this: B's snapshot would already include
+// A's new position.)
+func TestReorderRollbackKeepsOtherConfirmedReorders(t *testing.T) {
+	m, fc := testModel(t, "fixture-user/1")
+	m.sortOff = true
+
+	// A is in Backlog, B in Done; their swaps touch disjoint
+	// neighbourhoods, so absolute indices are directly comparable.
+	const itemA, itemB = "PVTI_snz_5", "PVTI_snz_9"
+	origB := indexOfID(itemOrder(m.board.Items), itemB)
+	if origB < 0 {
+		t.Fatalf("item B %s not on board", itemB)
+	}
+
+	// Start B's reorder (optimistic only; not yet flushed), which
+	// snapshots the pre-A board order as B's confirmed order.
+	m.setFocusedByID(itemB)
+	itB, ok := m.focusedItem()
+	if !ok || itB.ID != itemB {
+		t.Fatalf("focus = %q ok=%v", itB.ID, ok)
+	}
+	m = send(m, "J")
+	if got := indexOfID(itemOrder(m.board.Items), itemB); got == origB {
+		t.Fatal("J did not apply optimistically for B")
+	}
+	if _, ok := m.pendingPos[itB.ID]; !ok {
+		t.Fatal("no pending reorder recorded for B")
+	}
+
+	// Reorder A and drive it to a confirmed success.
+	m.setFocusedByID(itemA)
+	itA, ok := m.focusedItem()
+	if !ok || itA.ID != itemA {
+		t.Fatalf("focus = %q ok=%v", itA.ID, ok)
+	}
+	m = send(m, "J")
+	m = flushReorderNow(t, m, itA.ID)
+	if _, ok := m.pendingPos[itA.ID]; ok {
+		t.Fatal("pending reorder for A not cleared after success")
+	}
+	confirmedA := indexOfID(itemOrder(m.board.Items), itemA)
+	if want := indexOfID(itemOrder(m.board.Items), "PVTI_snz_6") + 1; confirmedA != want {
+		t.Fatalf("A confirmed index = %d, want %d (right after snz_6): %v", confirmedA, want, itemOrder(m.board.Items))
+	}
+
+	// Now B's write fails; only B rolls back.
+	fc.PositionErr = fmt.Errorf("synthetic position failure")
+	m = flushReorderNow(t, m, itB.ID)
+
+	order := itemOrder(m.board.Items)
+	if got := indexOfID(order, itemB); got != origB {
+		t.Fatalf("B index after failed reorder = %d, want original %d: %v", got, origB, order)
+	}
+	if got := indexOfID(order, itemA); got != confirmedA {
+		t.Fatalf("A index after B's failed reorder = %d, want confirmed %d: %v", got, confirmedA, order)
+	}
+	if !strings.Contains(m.failed[itB.ID], "synthetic position failure") {
+		t.Fatalf("failed map = %v", m.failed)
+	}
+	if len(m.pendingPos) != 0 {
+		t.Fatal("pending reorder not cleared after failure")
+	}
+}
+
+func TestReorderRefusedUnderPrioritySort(t *testing.T) {
+	m, fc := testModel(t, "fixture-user/1")
+	if !m.sortedByPriority() {
+		t.Fatal("fixture board should be Priority-sorted by default")
+	}
+	m.setFocusedByID("PVTI_snz_5")
+	before := itemOrder(m.board.Items)
+	fixtureBefore := itemOrder(fc.Board("fixture-user/1").Items)
+	m = send(m, "J")
+	if strings.Join(itemOrder(m.board.Items), ",") != strings.Join(before, ",") {
+		t.Fatal("J changed local order under Priority sort")
+	}
+	if len(m.pendingPos) != 0 {
+		t.Fatal("J queued a reorder under Priority sort")
+	}
+	if strings.Join(itemOrder(fc.Board("fixture-user/1").Items), ",") != strings.Join(fixtureBefore, ",") {
+		t.Fatal("J sent a reorder under Priority sort")
+	}
+	if !strings.Contains(m.footer, "Priority sort") {
+		t.Fatalf("footer = %q", m.footer)
+	}
+}
+
 func TestListToggleAndSearch(t *testing.T) {
 	m, _ := testModel(t, "fixture-user/1")
 	m = send(m, "v")

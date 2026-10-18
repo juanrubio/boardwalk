@@ -545,6 +545,9 @@ func (m *model) cardMarker(it githubx.Item) string {
 	if _, ok := m.pending[it.ID]; ok {
 		return "◌ "
 	}
+	if _, ok := m.pendingPos[it.ID]; ok {
+		return "◌ "
+	}
 	if _, ok := m.failed[it.ID]; ok {
 		return "✗ "
 	}

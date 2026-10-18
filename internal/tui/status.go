@@ -56,8 +56,8 @@ func (m *model) renderFooter(w int) string {
 	if message == m.footerAnnotated {
 		tone = m.footerTone
 	}
-	if m.quitting && len(m.pending) > 0 {
-		message = fmt.Sprintf("saving %d change…", len(m.pending))
+	if m.quitting && m.pendingWrites() > 0 {
+		message = fmt.Sprintf("saving %d change…", m.pendingWrites())
 		tone = statusPending
 	}
 	if message != "" {

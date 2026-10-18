@@ -95,6 +95,39 @@ func TestConvertDraftToIssue(t *testing.T) {
 	}
 }
 
+// (A13) Reorder sends updateProjectV2ItemPosition with project/item
+// vars; after is JSON null (Go nil) for "move to top" and the ID
+// string otherwise.
+func TestUpdateItemPosition(t *testing.T) {
+	t.Setenv("GH_TOKEN", "test-token")
+	f := &fakeDoer{}
+	c := &gqlClient{doer: f}
+	ctx := context.Background()
+	if err := c.UpdateItemPosition(ctx, "PVT_p", "PVTI_1", ""); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.UpdateItemPosition(ctx, "PVT_p", "PVTI_1", "PVTI_9"); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.queries) != 2 {
+		t.Fatalf("expected 2 GraphQL calls, got %d: %v", len(f.queries), f.queries)
+	}
+	for i, q := range f.queries {
+		if !strings.Contains(q, "updateProjectV2ItemPosition") {
+			t.Fatalf("query %d: unexpected mutation: %s", i, q)
+		}
+		if f.vars[i]["project"] != "PVT_p" || f.vars[i]["item"] != "PVTI_1" {
+			t.Fatalf("query %d: vars = %v, want project=PVT_p item=PVTI_1", i, f.vars[i])
+		}
+	}
+	if v, present := f.vars[0]["after"]; !present || v != nil {
+		t.Fatalf("move-to-top after = %v (present=%v), want present nil (JSON null)", v, present)
+	}
+	if got := f.vars[1]["after"]; got != "PVTI_9" {
+		t.Fatalf("after = %v, want PVTI_9", got)
+	}
+}
+
 // Without a content ID (older snapshots), the draft ID is resolved
 // from the item first — still never the item ID itself.
 func TestUpdateTitleBodyDraftResolvesContentID(t *testing.T) {

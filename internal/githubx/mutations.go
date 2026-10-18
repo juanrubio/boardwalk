@@ -420,6 +420,25 @@ func (c *gqlClient) DeleteItem(ctx context.Context, projectID, itemID string) er
 	return c.do(ctx, deleteMutation, map[string]interface{}{"project": projectID, "item": itemID}, &resp)
 }
 
+const reorderMutation = `mutation BoardwalkReorder($project: ID!, $item: ID!, $after: ID) { updateProjectV2ItemPosition(input: {projectId: $project, itemId: $item, afterId: $after}) { clientMutationId } }`
+
+func (c *gqlClient) UpdateItemPosition(ctx context.Context, projectID, itemID, afterID string) error {
+	if err := c.CheckAuth(ctx); err != nil {
+		return err
+	}
+	var resp struct {
+		UpdateProjectV2ItemPosition struct {
+			ClientMutationID string
+		}
+	}
+	var after interface{} // nil marshals to JSON null: move to the top
+	if afterID != "" {
+		after = afterID
+	}
+	vars := map[string]interface{}{"project": projectID, "item": itemID, "after": after}
+	return c.do(ctx, reorderMutation, vars, &resp)
+}
+
 func (c *gqlClient) ArchiveItem(ctx context.Context, projectID, itemID string) error {
 	if err := c.CheckAuth(ctx); err != nil {
 		return err

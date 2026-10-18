@@ -122,6 +122,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.flushMove(msg.itemID)
 	case moveResultMsg:
 		return m.onMoveResult(msg)
+	case reorderTickMsg:
+		return m, m.flushReorder(msg.itemID)
+	case reorderResultMsg:
+		return m.onReorderResult(msg)
 	case saveResultMsg:
 		if m.summary != nil {
 			if m.summary.sent && len(m.summary.results) > 0 {
@@ -322,12 +326,78 @@ func (m *model) onMoveResult(msg moveResultMsg) (tea.Model, tea.Cmd) {
 	}
 	delete(m.failed, msg.itemID)
 	m.setFocusedByID(msg.itemID)
-	if m.quitting && len(m.pending) == 0 {
+	if m.quitting && m.pendingWrites() == 0 {
 		return m, tea.Quit
 	}
 	// If a coalesced newer target is waiting, flush it.
 	if p != nil && p.scheduled {
 		return m, m.flushMove(msg.itemID)
+	}
+	return m, nil
+}
+
+func (m *model) onReorderResult(msg reorderResultMsg) (tea.Model, tea.Cmd) {
+	p := m.pendingPos[msg.itemID]
+	if p != nil {
+		p.inFlight = false
+	}
+	if msg.err != nil {
+		// A failed write keeps the app open so its outcome stays visible.
+		m.quitting = false
+		// Roll back only the failed item to its last confirmed
+		// neighbourhood, preserving every other item's current
+		// order (including other confirmed reorders).
+		if p != nil {
+			if m.board != nil && p.confirmed != nil {
+				present := make(map[string]bool, len(m.board.Items))
+				for _, it := range m.board.Items {
+					present[it.ID] = true
+				}
+				if present[msg.itemID] {
+					for i, it := range p.confirmed {
+						if it.ID != msg.itemID {
+							continue
+						}
+						predecessorID := ""
+						for j := i - 1; j >= 0; j-- {
+							if present[p.confirmed[j].ID] {
+								predecessorID = p.confirmed[j].ID
+								break
+							}
+						}
+						m.board.Items = githubx.ApplyReorder(m.board.Items, msg.itemID, predecessorID)
+						break
+					}
+				}
+			}
+			m.failed[msg.itemID] = msg.err.Error()
+			m.setFooter(statusError, "Reorder failed: "+msg.err.Error())
+			delete(m.pendingPos, msg.itemID)
+		}
+		m.clampFocus()
+		m.setFocusedByID(msg.itemID)
+		return m, nil
+	}
+	if p != nil {
+		if p.scheduled {
+			// A newer target is queued: the confirmed order is the
+			// previous one with the just-sent reorder applied.
+			p.confirmed = githubx.ApplyReorder(p.confirmed, msg.itemID, p.sentAfterID)
+		} else {
+			if m.board != nil {
+				p.confirmed = m.board.Items
+			}
+			delete(m.pendingPos, msg.itemID)
+		}
+	}
+	delete(m.failed, msg.itemID)
+	m.setFocusedByID(msg.itemID)
+	if m.quitting && m.pendingWrites() == 0 {
+		return m, tea.Quit
+	}
+	// If a coalesced newer target is waiting, flush it.
+	if p != nil && p.scheduled {
+		return m, m.flushReorder(msg.itemID)
 	}
 	return m, nil
 }
@@ -455,6 +525,78 @@ func (m *model) flushMove(itemID string) tea.Cmd {
 			return moveResultMsg{itemID: itemID, toName: toName, err: res[0].Err}
 		}
 		return moveResultMsg{itemID: itemID, toName: toName}
+	}
+}
+
+// doReorder performs an optimistic J/K within-column reorder
+// (dir -1 = up, +1 = down) against the manual board order (A13).
+func (m *model) doReorder(dir int) tea.Cmd {
+	if m.board == nil {
+		return nil
+	}
+	if m.stale {
+		m.setFooter(statusWarning, "Showing snapshot — moves are available once live data arrives.")
+		return nil
+	}
+	if m.sortedByPriority() {
+		m.setFooter(statusWarning, "Priority sort is on — press s for manual board order to reorder.")
+		return nil
+	}
+	it, ok := m.focusedItem()
+	if !ok {
+		return nil
+	}
+	groupName := ""
+	if m.hasGroup {
+		groupName = m.groupField.Name
+	}
+	afterID, ok := githubx.PositionAfterID(m.board.Items, groupName, it.ID, dir)
+	if !ok {
+		if dir < 0 {
+			m.setFooter(statusInfo, "Already at the top of the column.")
+		} else {
+			m.setFooter(statusInfo, "Already at the bottom of the column.")
+		}
+		return nil
+	}
+	if m.pendingPos == nil {
+		m.pendingPos = map[string]*pendingReorder{}
+	}
+	p := m.pendingPos[it.ID]
+	if p == nil {
+		p = &pendingReorder{itemID: it.ID, confirmed: m.board.Items}
+		m.pendingPos[it.ID] = p
+	}
+	p.afterID = afterID
+	m.board.Items = githubx.ApplyReorder(m.board.Items, it.ID, afterID)
+	m.rebuildFocus()
+	m.setFocusedByID(it.ID)
+	delete(m.failed, it.ID)
+	if p.inFlight {
+		p.scheduled = true
+		return nil
+	}
+	p.scheduled = true
+	itemID := it.ID
+	// Coalesce ~250ms: tick, then flush only if still scheduled.
+	return tea.Tick(250*time.Millisecond, func(time.Time) tea.Msg { return reorderTickMsg{itemID: itemID} })
+}
+
+func (m *model) flushReorder(itemID string) tea.Cmd {
+	p := m.pendingPos[itemID]
+	if p == nil || !p.scheduled || p.inFlight {
+		return nil
+	}
+	p.scheduled = false
+	p.inFlight = true
+	p.sentAfterID = p.afterID
+	svc, proj := m.svc, m.project
+	afterID := p.afterID
+	return func() tea.Msg {
+		if svc == nil || svc.Client == nil {
+			return reorderResultMsg{itemID: itemID, err: fmt.Errorf("no GitHub client configured")}
+		}
+		return reorderResultMsg{itemID: itemID, err: svc.Client.UpdateItemPosition(m.ctx, proj.ID, itemID, afterID)}
 	}
 }
 
