@@ -152,7 +152,9 @@ identically). *(A1)* A fifth, `--no-cache`, was added:
 ### GitHub accounts *(A11)*
 
 Boardwalk authenticates through `gh` and never stores tokens
-(ADR 0010). The required scopes are prescribed once per account:
+(ADR 0010). It requires two scopes — `project` (Projects v2 read/write)
+and `repo` (private issue/PR content); `gh auth login` does not grant
+`project` by default (`gh auth status` shows current scopes):
 
 ```sh
 gh auth login                        # once per account
@@ -165,7 +167,7 @@ account, with the employer one active), `--account <user>` (or
 `BOARDWALK_ACCOUNT=<user>`) selects another account for the whole
 run: Boardwalk obtains that account's token via
 `gh auth token --user <user>` and uses it for every request and for
-the upfront scope check, leaving `gh`'s active account untouched.
+the upfront auth check, leaving `gh`'s active account untouched.
 If the named account is not logged in, Boardwalk fails with exit 3
 and the `gh auth login` remediation. `gh auth switch` is never
 performed implicitly.

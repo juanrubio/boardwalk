@@ -10,7 +10,7 @@ Boardwalk lets you read and update GitHub Projects (Projects v2) boards without 
 
 1. Download the binary for your system from the [releases page](https://github.com/juanrubio/boardwalk/releases), and check it against `SHA256SUMS` if you like.
 2. Rename it to `boardwalk` and put it somewhere on your `PATH` (for example `~/.local/bin`).
-3. Make sure the GitHub CLI is set up with the scopes Boardwalk needs:
+3. Make sure the GitHub CLI has the scopes Boardwalk needs (`project` for Projects v2 read/write, `repo` for private issue/PR content). `gh auth login` does not grant `project` by default — you can verify your current scopes with `gh auth status`:
 
 ```sh
 gh auth login
@@ -28,7 +28,7 @@ boardwalk --account juanrubio board
 BOARDWALK_ACCOUNT=juanrubio boardwalk item list
 ```
 
-Boardwalk borrows that account's token from `gh` for the run and checks its scopes the same way; `gh`'s active account is never switched. Each account needs the one-time setup above (`gh auth login`, then `gh auth refresh -s project,repo` while that account is active).
+Boardwalk borrows that account's token from `gh` for the run; `gh`'s active account is never switched. Each account needs the one-time setup above (`gh auth login`, then `gh auth refresh -s project,repo` while that account is active).
 
 ## Quick start
 
