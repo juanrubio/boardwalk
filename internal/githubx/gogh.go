@@ -2,6 +2,7 @@ package githubx
 
 import (
 	"context"
+	"errors"
 	"os/exec"
 	"strings"
 	"sync"
@@ -112,10 +113,16 @@ func (c *gqlClient) do(ctx context.Context, query string, vars map[string]interf
 // classify maps GraphQL transport errors to exit codes.
 func classify(err error) error {
 	msg := err.Error()
-	switch {
-	case strings.Contains(msg, "INSUFFICIENT_SCOPES"), strings.Contains(msg, "insufficient scopes"):
-		return exiterr.Authf("GitHub token is missing project/repo scopes: %s", firstLine(msg)).
+	if isInsufficientScopes(err, msg) {
+		detail := firstLine(msg)
+		var gqlErr *ghapi.GraphQLError
+		if errors.As(err, &gqlErr) && len(gqlErr.Errors) > 0 {
+			detail = firstLine(gqlErr.Errors[0].Message)
+		}
+		return exiterr.Authf("GitHub token is missing project/repo scopes: %s", detail).
 			WithRemediation("Run `gh auth refresh -s project,repo`, then retry.")
+	}
+	switch {
 	case strings.Contains(msg, "RATE_LIMITED"), strings.Contains(msg, "rate limit"):
 		return exiterr.Failuref("GitHub rate limit reached: %s", firstLine(msg)).
 			WithRemediation("Wait for the rate-limit window to reset, then retry. Boardwalk never retries a mutation silently.")
@@ -127,6 +134,21 @@ func classify(err error) error {
 	default:
 		return exiterr.Wrap(exiterr.CodeFailure, "GitHub request failed: "+firstLine(msg), err)
 	}
+}
+
+func isInsufficientScopes(err error, msg string) bool {
+	var gqlErr *ghapi.GraphQLError
+	if errors.As(err, &gqlErr) {
+		for _, item := range gqlErr.Errors {
+			if item.Type == "INSUFFICIENT_SCOPES" {
+				return true
+			}
+		}
+	}
+	return strings.Contains(msg, "INSUFFICIENT_SCOPES") ||
+		strings.Contains(msg, "insufficient scopes") ||
+		strings.Contains(msg, "has not been granted the required scopes") ||
+		strings.Contains(msg, "requires one of the following scopes")
 }
 
 func firstLine(s string) string {
